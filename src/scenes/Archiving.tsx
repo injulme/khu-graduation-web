@@ -450,6 +450,48 @@ function useLineHighlight(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
+// Waste Type · Similar Colors: 스크롤로 화면에 들어오면 단어마다 아래에서 위로 올라오며 나타난다
+// 같은 group 끼리 첫 단어가 보일 때 함께 시작하고, 단어 사이는 RISE_STAGGER 만큼 늦게 올라온다
+const RISE_DURATION = 0.8 // 한 단어가 올라오는 시간(초)
+const RISE_STAGGER = 0.15 // 다음 단어가 늦게 시작하는 간격(초)
+const RISE_VIEW_START = 'top 85%'
+
+// 단어 박스 밖은 잘라서 아래에 숨겨 둔 글자가 박스 안으로 올라오며 보이게 한다
+function RiseWord({ group, style, children }: { group: string; style: CSSProperties; children: string }) {
+  return (
+    <span className="archiving__heading archiving__rise" style={style}>
+      <span className="archiving__rise-inner" data-rise={group}>
+        {children}
+      </span>
+    </span>
+  )
+}
+
+function useRise(ref: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const ctx = gsap.context(() => {
+      const groups = new Map<string, HTMLElement[]>()
+      root.querySelectorAll<HTMLElement>('[data-rise]').forEach((el) => {
+        const key = el.dataset.rise ?? ''
+        groups.set(key, [...(groups.get(key) ?? []), el])
+      })
+      groups.forEach((words) => {
+        gsap.from(words, {
+          yPercent: 100,
+          duration: RISE_DURATION,
+          ease: 'power3.out',
+          stagger: RISE_STAGGER,
+          // 글자는 아래로 내려가 있으니 제자리인 바깥 박스를 기준으로 잰다
+          scrollTrigger: { trigger: words[0].parentElement, start: RISE_VIEW_START, once: true },
+        })
+      })
+    }, root)
+    return () => ctx.revert()
+  }, [ref])
+}
+
 const INK_DURATION = 0.5 // 검정이 퍼지는 시간(초)
 // 원 반지름 71% 면 단어 박스 모서리까지 덮는다 (clip-path circle 의 % 기준은 대각선/√2)
 const INK_FULL = 'circle(71% at 50% 50%)'
@@ -485,6 +527,7 @@ export function Archiving() {
   useScramble(introRefs, true)
   usePinFloat(ref)
   useLineHighlight(ref)
+  useRise(ref)
 
   return (
     <main ref={ref} className="archiving">
@@ -582,12 +625,12 @@ export function Archiving() {
           data-pin-end="cup-coffee"
         />
         <span className="archiving__paren archiving__paren--sm" style={at(375, 2719)}>(</span>
-        <span className="archiving__heading" style={at(507, 2732)}>Waste</span>
-        <span className="archiving__heading" style={at(533, 2837)}>Type</span>
+        <RiseWord group="waste-type" style={at(507, 2732)}>Waste</RiseWord>
+        <RiseWord group="waste-type" style={at(533, 2837)}>Type</RiseWord>
         <span className="archiving__paren archiving__paren--sm" style={at(799, 2719)}>)</span>
         <span className="archiving__paren archiving__paren--sm" style={at(1059, 2719)}>(</span>
-        <span className="archiving__heading" style={at(1175.16, 2732)}>Similar</span>
-        <span className="archiving__heading" style={at(1190.16, 2837)}>Colors</span>
+        <RiseWord group="similar-colors" style={at(1175.16, 2732)}>Similar</RiseWord>
+        <RiseWord group="similar-colors" style={at(1190.16, 2837)}>Colors</RiseWord>
         <span className="archiving__paren archiving__paren--sm" style={at(1482.16, 2719)}>)</span>
 
         {/* Waste Type */}

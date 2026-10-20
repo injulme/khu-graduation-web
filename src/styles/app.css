@@ -772,6 +772,15 @@ body:has(.archiving) * {
   pointer-events: none;
 }
 
+/* Waste Type · Similar Colors: 줄 높이(85px) 박스 밖은 잘라서 글자가 아래에서 올라오며 나타난다 */
+.archiving__rise {
+  overflow: hidden;
+}
+
+.archiving__rise-inner {
+  display: inline-block;
+}
+
 .archiving__heading--dim {
   color: #b8b8b8;
 }
