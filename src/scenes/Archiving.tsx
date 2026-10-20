@@ -81,7 +81,35 @@ const RINGS = [
   { x: 1666, y: 845 },
 ]
 
-const MATERIALS = ['Paper', 'Glass', 'Metal', 'Plastic', 'Plastic Film', 'Other']
+// materials 목록. hover 하면 오른쪽에 그 재질 사진이 나온다 (피그마 Waste Type 섹션 140:3193)
+// 사진 위치·크기는 목록 왼쪽 위(첫 줄 글자 윗부분) 기준 px. 사진은 피그마 노드를 2x 로 내보낸 것
+const MATERIALS = [
+  { name: 'Paper', img: { file: 'material-paper', x: 600, y: -130, w: 155, h: 200 } },
+  { name: 'Glass', img: { file: 'material-glass', x: 558, y: -75, w: 171, h: 256 } },
+  { name: 'Metal', img: { file: 'material-metal', x: 471, y: 30, w: 312.01, h: 280.27 } },
+  { name: 'Plastic', img: { file: 'material-plastic', x: 529, y: 97, w: 179.95, h: 312.54 } },
+  { name: 'Plastic Film', img: { file: 'material-plastic-film', x: 515, y: 274, w: 240, h: 253 } },
+  { name: 'Other', img: { file: 'material-other', x: 515, y: 391, w: 293.99, h: 278.69 } },
+]
+const LIST_ROW = 110 // 목록 한 줄 간격
+const LIST_ROW_TOP = -20.5 // 줄 박스 윗부분: 글자 윗부분 기준 (app.css .archiving__list-item margin-top)
+const LIST_ROW_LINE = 110 // 줄 아래 구분선: 줄 박스 윗부분 기준 (app.css .archiving__list-item::after top)
+
+// hover 사진. 줄 아래 구분선을 바닥 삼아 그 아래는 잘라서, 선 밑에 숨어 있던 사진이 선 위로 뛰어오른다
+// 사진이 선보다 아래로 내려와 있으면(Other) 사진 아랫부분을 바닥으로 삼는다
+function MaterialImg({ img, row }: { img: (typeof MATERIALS)[number]['img']; row: number }) {
+  // 목록 기준 좌표를 이 줄 박스 기준으로 바꾼다
+  const top = img.y - (row * LIST_ROW + LIST_ROW_TOP)
+  const floor = Math.max(img.h, LIST_ROW_LINE - top) // 사진 윗부분에서 바닥까지
+  return (
+    <span
+      className="archiving__material-img"
+      style={{ left: img.x, top, width: img.w, height: floor, '--drop': `${floor}px` } as CSSProperties}
+    >
+      <img src={figmaSrc(img.file)} alt="" style={{ width: img.w, height: img.h }} />
+    </span>
+  )
+}
 const COLORS: WasteColor[] = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Brown', 'Black', 'White']
 
 // colors 목록 hover 배경색. 프로젝트·피그마에 색 이름별로 정해 둔 값이 없어 직접 정한다 ('#rrggbb')
@@ -686,14 +714,15 @@ export function Archiving() {
           Waste Type
         </h2>
         <ul className="archiving__list" style={at(1109, 3451)}>
-          {MATERIALS.map((m) => (
-            <li key={m} className="archiving__list-item archiving__list-item--material">
+          {MATERIALS.map(({ name, img }, i) => (
+            <li key={name} className="archiving__list-item archiving__list-item--material">
               {/* 줄 높이 박스 밖은 잘라서 글자가 아래에서 올라오며 나타난다 (useRise) */}
               <span className="archiving__rise archiving__rise--line">
                 <span className="archiving__rise-inner" data-rise="materials">
-                  {m}
+                  {name}
                 </span>
               </span>
+              <MaterialImg img={img} row={i} />
             </li>
           ))}
         </ul>

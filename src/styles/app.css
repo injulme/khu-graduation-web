@@ -907,6 +907,41 @@ body:has(.archiving) * {
   transform: scaleY(1);
 }
 
+/* materials hover 사진: 줄 아래 구분선(바닥) 밑에 숨어 있다가 선 위로 뛰어올라(조금 더 솟았다 내려앉음) 나오고, 벗어나면 선 밑으로 떨어진다 */
+/* 바깥 박스는 사진 윗부분부터 바닥까지. 바닥 아래만 잘라서 위로 솟는 부분은 보인다 */
+.archiving__material-img {
+  --jump-duration: 0.6s;
+  --jump-ease: cubic-bezier(0.34, 1.8, 0.64, 1); /* 1 을 넘는 값이 바닥 위로 솟는 정도 */
+  position: absolute;
+  pointer-events: none;
+  clip-path: inset(-1000px -1000px 0 -1000px);
+}
+
+.archiving__material-img img {
+  display: block;
+  max-width: none;
+  transform: translateY(var(--drop));
+  transition: transform var(--fill-duration) cubic-bezier(0.4, 0, 1, 1);
+}
+
+.archiving__list-item--material:hover .archiving__material-img img {
+  transform: none;
+  transition: transform var(--jump-duration) var(--jump-ease);
+}
+
+/* 사진이 다른 줄의 구분선 위로 오도록 hover 한 줄을 앞으로. 벗어날 때는 사진이 다 내려간 뒤에 뒤로 보낸다 */
+.archiving__list-item--material {
+  transition:
+    color var(--fill-duration) var(--fill-ease),
+    font-weight var(--fill-duration) var(--fill-ease),
+    z-index 0s var(--fill-duration);
+}
+
+.archiving__list-item--material:hover {
+  z-index: 1;
+  transition-delay: 0s;
+}
+
 .archiving__list-item::after {
   content: '';
   position: absolute;
