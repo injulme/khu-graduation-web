@@ -81,9 +81,11 @@ const RINGS = [
   { x: 1666, y: 845 },
 ]
 
+// hover 사진: 위치·크기는 목록 왼쪽 위(첫 줄 글자 윗부분) 기준 px. 사진은 피그마 노드를 2x 로 내보낸 것
+type HoverImgSpec = { file: string; x: number; y: number; w: number; h: number }
+
 // materials 목록. hover 하면 오른쪽에 그 재질 사진이 나온다 (피그마 Waste Type 섹션 140:3193)
-// 사진 위치·크기는 목록 왼쪽 위(첫 줄 글자 윗부분) 기준 px. 사진은 피그마 노드를 2x 로 내보낸 것
-const MATERIALS = [
+const MATERIALS: { name: string; img: HoverImgSpec }[] = [
   { name: 'Paper', img: { file: 'material-paper', x: 600, y: -130, w: 155, h: 200 } },
   { name: 'Glass', img: { file: 'material-glass', x: 558, y: -75, w: 171, h: 256 } },
   { name: 'Metal', img: { file: 'material-metal', x: 471, y: 30, w: 312.01, h: 280.27 } },
@@ -96,14 +98,14 @@ const LIST_ROW_TOP = -20.5 // 줄 박스 윗부분: 글자 윗부분 기준 (app
 const LIST_ROW_LINE = 110 // 줄 아래 구분선: 줄 박스 윗부분 기준 (app.css .archiving__list-item::after top)
 
 // hover 사진. 줄 아래 구분선을 바닥 삼아 그 아래는 잘라서, 선 밑에 숨어 있던 사진이 선 위로 뛰어오른다
-// 사진이 선보다 아래로 내려와 있으면(Other) 사진 아랫부분을 바닥으로 삼는다
-function MaterialImg({ img, row }: { img: (typeof MATERIALS)[number]['img']; row: number }) {
+// 사진이 선보다 아래로 내려와 있으면(materials Other, colors Yellow·Blue 등) 사진 아랫부분을 바닥으로 삼는다
+function HoverImg({ img, row }: { img: HoverImgSpec; row: number }) {
   // 목록 기준 좌표를 이 줄 박스 기준으로 바꾼다
   const top = img.y - (row * LIST_ROW + LIST_ROW_TOP)
   const floor = Math.max(img.h, LIST_ROW_LINE - top) // 사진 윗부분에서 바닥까지
   return (
     <span
-      className="archiving__material-img"
+      className="archiving__hover-img"
       style={{ left: img.x, top, width: img.w, height: floor, '--drop': `${floor}px` } as CSSProperties}
     >
       <img src={figmaSrc(img.file)} alt="" style={{ width: img.w, height: img.h }} />
@@ -124,6 +126,19 @@ const COLOR_FILL: Record<WasteColor, string | null> = {
   Brown: '#673711',
   Black: '#000000',
   White: '#FFFFFF',
+}
+
+// colors 목록 hover 사진. 목록 왼쪽에 나온다 (피그마 Similar Color 섹션 140:3376)
+const COLOR_IMG: Record<WasteColor, HoverImgSpec> = {
+  Red: { file: 'color-red', x: 70, y: -147, w: 287, h: 237 },
+  Orange: { file: 'color-orange', x: 116, y: -109, w: 191, h: 288 },
+  Yellow: { file: 'color-yellow', x: 0, y: -15, w: 353.75, h: 350.77 },
+  Green: { file: 'color-green', x: 60, y: 179, w: 306, h: 204 },
+  Blue: { file: 'color-blue', x: 24, y: 226, w: 423.69, h: 423.69 },
+  Purple: { file: 'color-purple', x: 105, y: 400, w: 236, h: 228 },
+  Brown: { file: 'color-brown', x: 0, y: 397, w: 474.03, h: 405.68 },
+  Black: { file: 'color-black', x: 60, y: 563, w: 304.74, h: 304.74 },
+  White: { file: 'color-white', x: 84, y: 796, w: 256, h: 150 },
 }
 
 // hover 배경색과 그 위 글자색을 CSS 변수로 넘긴다
@@ -722,20 +737,21 @@ export function Archiving() {
                   {name}
                 </span>
               </span>
-              <MaterialImg img={img} row={i} />
+              <HoverImg img={img} row={i} />
             </li>
           ))}
         </ul>
 
         {/* Similar Colors */}
         <ul className="archiving__list" style={at(-1, 4337)}>
-          {COLORS.map((c) => (
+          {COLORS.map((c, i) => (
             <li key={c} className="archiving__list-item archiving__list-item--color" style={fillStyle(COLOR_FILL[c])}>
               <span className="archiving__rise archiving__rise--line">
                 <span className="archiving__rise-inner" data-rise="colors">
                   {c}
                 </span>
               </span>
+              <HoverImg img={COLOR_IMG[c]} row={i} />
             </li>
           ))}
         </ul>
