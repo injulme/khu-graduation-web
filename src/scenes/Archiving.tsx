@@ -1,4 +1,5 @@
-import { useRef, type CSSProperties } from 'react'
+import { useLayoutEffect, useRef, type CSSProperties, type RefObject } from 'react'
+import gsap from 'gsap'
 
 import { useFitWidth } from '../lib/useFitWidth'
 import { objectSrc, photoSrc, WASTE_PHOTOS, type WasteObject } from '../lib/waste'
@@ -150,15 +151,30 @@ const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : fig
 
 const at = (x: number, y: number): CSSProperties => ({ left: x, top: y })
 
+// 타이틀: 화면 왼쪽 밖에서 제자리로 1.5초 동안 일정한 속도로 들어온다
+function useTitleIntro(ref: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    // 타이틀 왼쪽 여백 + 타이틀 폭만큼 밀어 두면 화면 밖에서 시작한다
+    const tween = gsap.from(el, { x: -(el.offsetLeft + el.offsetWidth), duration: 1.5, ease: 'none' })
+    return () => {
+      tween.revert()
+    }
+  }, [ref])
+}
+
 export function Archiving() {
   const ref = useRef<HTMLElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   useFitWidth(ref)
+  useTitleIntro(titleRef)
 
   return (
     <main ref={ref} className="archiving">
       <div className="archiving__canvas">
         {/* 상단: 타이틀과 오브젝트 */}
-        <h1 className="archiving__title">COLORS WE LEFT BEHIND</h1>
+        <h1 ref={titleRef} className="archiving__title">COLORS WE LEFT BEHIND</h1>
         <span className="archiving__rule archiving__rule--left" aria-hidden="true" />
         <span className="archiving__rule archiving__rule--right" aria-hidden="true" />
         <p className="archiving__sub archiving__sub--left">COLORS WE PASSED BY.</p>
