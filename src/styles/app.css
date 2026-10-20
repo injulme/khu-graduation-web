@@ -761,3 +761,39 @@
   .obj__card-shot { animation: none; translate: 0 -50%; }
   .obj__cup-video, .obj__text, .obj__orbit { transition: none; }
 }
+
+/* 커스텀 커서 */
+.has-cursor,
+.has-cursor * {
+  cursor: none !important;
+}
+
+.cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 200px;
+  height: 200px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1px solid #ff0000;
+  background-color: #00ff9099;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  will-change: transform;
+}
+
+.cursor::before,
+.cursor::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  background: #ff0000;
+  transform: translate(-50%, -50%);
+}
+
+/* 가운데 십자 포인터 */
+.cursor::before { width: 16px; height: 2px; }
+.cursor::after { width: 2px; height: 16px; }
+
+.cursor.is-visible { opacity: 1; }

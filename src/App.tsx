@@ -1,3 +1,4 @@
+// import { Cursor } from './components/Cursor'
 import { Header } from './components/Header'
 import { Lens } from './components/Lens'
 import { useCutDeck } from './lib/useCutDeck'
@@ -45,6 +46,7 @@ export default function App() {
       {route === 'object' && arg && <ObjectPage name={arg} />}
       {route === 'gacha' && <Gacha />}
       {route === 'archiving' && <ArchivePage />}
+      {/* <Cursor /> */}
     </>
   )
 }
