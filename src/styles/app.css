@@ -611,3 +611,82 @@
 .cursor::after { width: 2px; height: 16px; }
 
 .cursor.is-visible { opacity: 1; }
+
+.archiving {
+  position: relative;
+  min-height: 100svh;
+  background: var(--bg);
+}
+
+.archiving__title {
+  position: absolute;
+  top: 127px;
+  left: 80px;
+  margin: 0;
+  color: #000000;
+  font-family: 'NT Epika', serif;
+  font-size: 100px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.archiving__rule {
+  position: absolute;
+  top: 275px;
+  width: 336px;
+  height: 0;
+  border-top: 3px solid #000000;
+}
+
+.archiving__rule--left {
+  left: 80px;
+}
+
+.archiving__rule--right {
+  left: 1504px;
+}
+
+.archiving__sub {
+  position: absolute;
+  top: 314px;
+  margin: 0;
+  color: #000000;
+  font-family: 'GamtanRoad Dotum', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.archiving__sub--left {
+  left: 80px;
+}
+
+.archiving__sub--right {
+  right: 80px;
+  text-align: right;
+}
+
+.archiving__label {
+  position: absolute;
+  top: 394.95px;
+  left: 748.13px;
+  margin: 0;
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.archiving__object {
+  position: absolute;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
+}
