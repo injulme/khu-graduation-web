@@ -950,3 +950,9 @@ body:has(.archiving) * {
   white-space: pre;
   text-align: center;
 }
+
+/* 자동 줄바꿈 문단 스크램블용: 단어 안에서는 줄이 바뀌지 않게 */
+.archiving__type-word {
+  display: inline-block;
+  white-space: nowrap;
+}

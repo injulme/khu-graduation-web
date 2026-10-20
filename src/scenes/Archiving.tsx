@@ -1,5 +1,6 @@
-import { useLayoutEffect, useMemo, useRef, type CSSProperties, type RefObject } from 'react'
+import { Fragment, useLayoutEffect, useMemo, useRef, type CSSProperties, type RefObject } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import { useFitWidth } from '../lib/useFitWidth'
 import { objectSrc, photoSrc, WASTE_PHOTOS, type WasteObject } from '../lib/waste'
@@ -149,6 +150,8 @@ const cellLabel = (cell: Cell) =>
   `( No.${String((typeof cell === 'string' && NO.get(cell)) || 1).padStart(3, '0')})`
 const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : figmaSrc(`grid-${cell}`))
 
+gsap.registerPlugin(ScrollTrigger)
+
 const at = (x: number, y: number): CSSProperties => ({ left: x, top: y })
 
 const TITLE = 'COLORS WE LEFT BEHIND'
@@ -179,6 +182,21 @@ const splitChars = (text: string, className: string) =>
     <span key={i} className={className} data-char={c} aria-hidden="true">
       {c}
     </span>
+  ))
+
+// 자동 줄바꿈되는 문단용: 단어를 줄바꿈 안 되는 span 으로 묶고 그 안에서 글자를 나눈다.
+// 글자만 나누면 단어 중간에서 줄이 바뀐다. 공백은 일반 텍스트로 두어 원래처럼 줄이 바뀌게 한다
+const splitWords = (text: string, className: string) =>
+  text.split('\n').map((line, i) => (
+    <Fragment key={i}>
+      {i > 0 && <br />}
+      {line.split(' ').map((word, j) => (
+        <Fragment key={j}>
+          {j > 0 && ' '}
+          <span className="archiving__type-word">{splitChars(word, className)}</span>
+        </Fragment>
+      ))}
+    </Fragment>
   ))
 
 const INTRO = 1.5 // 들어오는 시간(초)
@@ -230,6 +248,14 @@ function useTitleIntro(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
+const INTRO_TEXT = `Since April, we have traveled across the country, photographing discarded objects and collecting the colors found within them. What we discovered was a landscape far more colorful than expected.
+These are not colors we created, but colors that already exist in the world we live in.
+
+Discarded things have remained with us for so long that they have become part of the landscape.
+We have adapted to a polluted world, until even pollution begins to feel natural.
+So, can we really call this colorful world beautiful?`
+const INTRO_KO = '버려진 풍경 속 색을 수집하며, 우리가 자연스럽다고 믿어온 환경을 다시 바라봅니다.'
+
 const SUB_LEFT = 'COLORS WE PASSED BY.'
 const SUB_RIGHT = ['익숙해서 지나쳤던 색들을 다시 바라봅니다.', '우리가 수집한 풍경 속에 남겨진 색의 흔적들.']
 
@@ -238,6 +264,9 @@ const TYPE_SPEED = 0.04 // 앞 글자부터 원래 글자로 고정되는 간격
 const SCRAMBLE_LEAD = 0.3 // 첫 글자가 고정되기 전까지 랜덤 글자만 도는 시간(초)
 const SCRAMBLE_SWAP = 0.05 // 랜덤 글자를 바꾸는 간격(초)
 const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+// 스크롤로 시작하는 문구는 문구 윗부분이 화면 아래에서 15% 올라왔을 때 시작
+const SCRAMBLE_VIEW_START = 'top 85%'
 
 const randomChar = () => SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
 
@@ -255,8 +284,38 @@ function lockWidths(chars: HTMLElement[]) {
   })
 }
 
-// 소개 문구 스크램블: 모든 자리에서 랜덤 알파벳이 바뀌다가, 앞 글자부터 차례로 원래 글자로 고정된다
-function useScramble(refs: RefObject<HTMLElement | null>[]) {
+// 랜덤 글자가 돌다가 앞 글자부터 차례로 원래 글자로 고정되는 트윈. 공백은 바꾸지 않는다
+function scrambleTween(groups: HTMLElement[][], vars: gsap.TweenVars = {}) {
+  const slots = groups.map((chars) => chars.filter((c) => charOf(c).trim()))
+  const longest = Math.max(...slots.map((s) => s.length))
+  const clock = { t: 0 }
+  let lastSwap = -Infinity
+  // 시작 전에도 랜덤 글자를 보여준다
+  slots.flat().forEach((c) => (c.textContent = randomChar()))
+  return gsap.to(clock, {
+    t: SCRAMBLE_LEAD + longest * TYPE_SPEED,
+    duration: SCRAMBLE_LEAD + longest * TYPE_SPEED,
+    ease: 'none',
+    onStart: () => (lastSwap = -Infinity),
+    onUpdate: () => {
+      const settled = Math.floor((clock.t - SCRAMBLE_LEAD) / TYPE_SPEED) + 1
+      const swap = clock.t - lastSwap >= SCRAMBLE_SWAP
+      if (swap) lastSwap = clock.t
+      slots.forEach((chars) =>
+        chars.forEach((c, i) => {
+          if (i < settled) c.textContent = charOf(c)
+          else if (swap) c.textContent = randomChar()
+        }),
+      )
+    },
+    onComplete: () => slots.flat().forEach((c) => (c.textContent = charOf(c))),
+    ...vars,
+  })
+}
+
+// 문구 스크램블: 모든 자리에서 랜덤 알파벳이 바뀌다가, 앞 글자부터 차례로 원래 글자로 고정된다.
+// onView 면 문구마다 스크롤로 화면에 들어올 때 한 번 시작하고, 아니면 페이지에 들어오자마자 다 같이 시작한다
+function useScramble(refs: RefObject<HTMLElement | null>[], onView = false) {
   useLayoutEffect(() => {
     const els = refs.map((r) => r.current).filter((el): el is HTMLElement => !!el)
     const groups = els.map((el) => [...el.querySelectorAll<HTMLElement>('.archiving__type-char')])
@@ -271,38 +330,26 @@ function useScramble(refs: RefObject<HTMLElement | null>[]) {
     document.fonts.ready.then(() => alive && layout())
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return () => void (alive = false)
 
-    // 공백은 바꾸지 않는다
-    const slots = groups.map((chars) => chars.filter((c) => charOf(c).trim()))
-    const longest = Math.max(...slots.map((s) => s.length))
-    const clock = { t: 0 }
-    let lastSwap = -Infinity
-    const tween = gsap.to(clock, {
-      t: SCRAMBLE_LEAD + longest * TYPE_SPEED,
-      duration: SCRAMBLE_LEAD + longest * TYPE_SPEED,
-      delay: TYPE_DELAY,
-      ease: 'none',
-      onStart: () => (lastSwap = -Infinity),
-      onUpdate: () => {
-        const settled = Math.floor((clock.t - SCRAMBLE_LEAD) / TYPE_SPEED) + 1
-        const swap = clock.t - lastSwap >= SCRAMBLE_SWAP
-        if (swap) lastSwap = clock.t
-        slots.forEach((chars) =>
-          chars.forEach((c, i) => {
-            if (i < settled) c.textContent = charOf(c)
-            else if (swap) c.textContent = randomChar()
-          }),
-        )
-      },
-      onComplete: () => slots.flat().forEach((c) => (c.textContent = charOf(c))),
+    const ctx = gsap.context(() => {
+      if (!onView) {
+        scrambleTween(groups, { delay: TYPE_DELAY })
+        return
+      }
+      els.forEach((el, i) => {
+        // .archiving__type-part 로 나눈 부분은 동시에 시작한다
+        const parts = [...el.querySelectorAll<HTMLElement>('.archiving__type-part')].map((part) => [
+          ...part.querySelectorAll<HTMLElement>('.archiving__type-char'),
+        ])
+        const tween = scrambleTween(parts.length ? parts : [groups[i]], { paused: true })
+        ScrollTrigger.create({ trigger: el, start: SCRAMBLE_VIEW_START, once: true, onEnter: () => tween.play() })
+      })
     })
-    // 시작 전(TYPE_DELAY 동안)에도 랜덤 글자를 보여준다
-    slots.flat().forEach((c) => (c.textContent = randomChar()))
     return () => {
       alive = false
-      tween.kill()
-      slots.flat().forEach((c) => (c.textContent = charOf(c)))
+      ctx.revert()
+      groups.flat().forEach((c) => (c.textContent = charOf(c)))
     }
-  }, [refs])
+  }, [refs, onView])
 }
 
 const INK_DURATION = 0.5 // 검정이 퍼지는 시간(초)
@@ -334,6 +381,10 @@ export function Archiving() {
   const subRightRef = useRef<HTMLParagraphElement>(null)
   const scrambleRefs = useMemo(() => [subLeftRef, subRightRef], [])
   useScramble(scrambleRefs)
+  const introRef = useRef<HTMLParagraphElement>(null)
+  const introKoRef = useRef<HTMLParagraphElement>(null)
+  const introRefs = useMemo(() => [introRef, introKoRef], [])
+  useScramble(introRefs, true)
 
   return (
     <main ref={ref} className="archiving">
@@ -386,16 +437,22 @@ export function Archiving() {
         <h2 className="archiving__heading archiving__heading--intro archiving__dim">
           <InkWord>COLLECT</InkWord> · <InkWord>TRACE</InkWord> · <InkWord>REVEAL</InkWord>
         </h2>
-        <p className="archiving__intro">
-          {`Since April, we have traveled across the country, photographing discarded objects and collecting the colors found within them. What we discovered was a landscape far more colorful than expected.
-These are not colors we created, but colors that already exist in the world we live in.
-
-Discarded things have remained with us for so long that they have become part of the landscape.
-We have adapted to a polluted world, until even pollution begins to feel natural.
-So, can we really call this colorful world beautiful?`}
+        <p ref={introRef} className="archiving__intro" aria-label={INTRO_TEXT}>
+          {/* 빈 줄 앞뒤 두 부분을 동시에 스크램블한다 */}
+          {INTRO_TEXT.split('\n\n').map((part, i) => (
+            <Fragment key={i}>
+              {i > 0 && (
+                <>
+                  <br />
+                  <br />
+                </>
+              )}
+              <span className="archiving__type-part">{splitWords(part, 'archiving__type-char')}</span>
+            </Fragment>
+          ))}
         </p>
-        <p className="archiving__intro-ko">
-          버려진 풍경 속 색을 수집하며, 우리가 자연스럽다고 믿어온 환경을 다시 바라봅니다.
+        <p ref={introKoRef} className="archiving__intro-ko" aria-label={INTRO_KO}>
+          {splitWords(INTRO_KO, 'archiving__type-char')}
         </p>
         {/* 커피컵: 로컬 cup-coffee 와 기울기가 달라 피그마 140:2529 내보내기 사용 */}
         <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 1662), width: 336.5 }} />
