@@ -705,6 +705,16 @@ body:has(.archiving) * {
   pointer-events: none;
 }
 
+/* 둥실둥실 뜨는 움직임. --float 는 gsap 이 바꾼다 */
+.archiving__object[data-pin='start'] {
+  translate: 0 var(--float, 0px);
+}
+
+/* 스크롤 고정 애니메이션의 도착 위치 표시. 보이지 않고 자리만 잡는다 */
+.archiving__object[data-pin='end'] {
+  visibility: hidden;
+}
+
 .archiving__callout {
   position: absolute;
   max-width: none;

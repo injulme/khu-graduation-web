@@ -21,6 +21,8 @@ type Item = {
   blend?: CSSProperties['mixBlendMode']
   // 피그마에서 글자보다 위 레이어
   front?: boolean
+  // 스크롤 고정 애니메이션의 출발(start)/도착(end) 위치. 도착 위치 이미지는 표시 없이 자리만 잡는다
+  pin?: 'start' | 'end'
 }
 
 const ITEMS: Item[] = [
@@ -32,8 +34,8 @@ const ITEMS: Item[] = [
   { name: 'can-coke-crushed', w: 250, h: 376.17, x: 1614.01, y: 456.23 },
   // 트레이는 같은 이미지가 두 군데 있다. 피그마 데이터엔 회전 후 외곽 박스(301.5×217.84)만 있어서
   // 피그마 렌더와 실루엣을 맞춰 원본 비율 크기와 각도를 역산했다
-  { name: 'tray-foam', w: 271.96, h: 158.74, x: 1469, y: 1194, angle: 13.5, front: true },
-  { name: 'tray-foam', w: 271.96, h: 158.74, x: 1469, y: 2236, angle: 13.5, front: true },
+  { name: 'tray-foam', w: 271.96, h: 158.74, x: 1469, y: 1194, angle: 13.5, front: true, pin: 'start' },
+  { name: 'tray-foam', w: 271.96, h: 158.74, x: 1469, y: 2236, angle: 13.5, front: true, pin: 'end' },
 ]
 
 // 회전 후 외곽 박스 중심에 이미지 중심을 맞춘다
@@ -352,6 +354,49 @@ function useScramble(refs: RefObject<HTMLElement | null>[], onView = false) {
   }, [refs, onView])
 }
 
+// 고정되는 화면 위치(1920 기준 px). 트레이 윗부분이 화면 맨 위에서 86px 아래에 닿으면 고정 시작
+const TRAY_PIN_TOP = 86
+const TRAY_FLOAT = 16 // 둥실둥실 뜨는 폭: 제자리 기준 위아래(px)
+const TRAY_FLOAT_DURATION = 1 // 위에서 아래까지 걸리는 시간(초). 왕복은 2배
+
+// 트레이: 화면 위쪽에 닿으면 그 자리에 고정된 채로 내려가다가, 두 번째 배치 위치에 닿으면 내려놓인다.
+// 실제로 움직이는 건 첫 번째 트레이 하나이고, 두 번째 트레이는 도착 지점 표시로만 쓴다
+function useTrayPin(ref: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const root = ref.current
+    const from = root?.querySelector<HTMLElement>('[data-pin="start"]')
+    const to = root?.querySelector<HTMLElement>('[data-pin="end"]')
+    if (!root || !from || !to) return
+    // 1920 기준 px 를 화면 축소(zoom) 배율에 맞춘다
+    const pinAt = () => TRAY_PIN_TOP * (parseFloat(getComputedStyle(root).zoom) || 1)
+    const ctx = gsap.context(() => {
+      gsap.to(from, {
+        // 두 트레이는 크기·회전이 같아서 top 만 옮기면 도착 위치와 정확히 겹친다
+        top: to.style.top,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: from,
+          start: () => `top ${pinAt()}px`,
+          endTrigger: to,
+          // 도착도 같은 기준이어야 내려놓이는 위치가 정확히 겹친다
+          end: () => `top ${pinAt()}px`,
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+      // 둥실둥실: 고정 애니메이션(top)·회전(transform)과 겹치지 않게 translate 로 따로 움직인다
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        gsap.fromTo(
+          from,
+          { '--float': `${-TRAY_FLOAT}px` },
+          { '--float': `${TRAY_FLOAT}px`, duration: TRAY_FLOAT_DURATION, ease: 'sine.inOut', repeat: -1, yoyo: true },
+        )
+      }
+    }, root)
+    return () => ctx.revert()
+  }, [ref])
+}
+
 const INK_DURATION = 0.5 // 검정이 퍼지는 시간(초)
 // 원 반지름 71% 면 단어 박스 모서리까지 덮는다 (clip-path circle 의 % 기준은 대각선/√2)
 const INK_FULL = 'circle(71% at 50% 50%)'
@@ -385,6 +430,7 @@ export function Archiving() {
   const introKoRef = useRef<HTMLParagraphElement>(null)
   const introRefs = useMemo(() => [introRef, introKoRef], [])
   useScramble(introRefs, true)
+  useTrayPin(ref)
 
   return (
     <main ref={ref} className="archiving">
@@ -414,6 +460,7 @@ export function Archiving() {
             src={objectSrc(item.name)}
             alt=""
             style={itemStyle(item)}
+            data-pin={item.pin}
           />
         ))}
         {CALLOUTS.map((c) => (
