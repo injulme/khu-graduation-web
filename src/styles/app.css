@@ -922,3 +922,10 @@
   display: inline-block;
   white-space: pre;
 }
+
+/* 소개 문구 스크램블용. 공백 폭 유지, 폭을 고정하므로 랜덤 글자는 가운데 정렬 */
+.archiving__type-char {
+  display: inline-block;
+  white-space: pre;
+  text-align: center;
+}

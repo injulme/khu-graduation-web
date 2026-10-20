@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type CSSProperties, type RefObject } from 'react'
+import { useLayoutEffect, useMemo, useRef, type CSSProperties, type RefObject } from 'react'
 import gsap from 'gsap'
 
 import { useFitWidth } from '../lib/useFitWidth'
@@ -153,6 +153,9 @@ const at = (x: number, y: number): CSSProperties => ({ left: x, top: y })
 
 const TITLE = 'COLORS WE LEFT BEHIND'
 
+// 스크램블 중에도 원래 글자를 알 수 있게 data-char 에 둔다
+const charOf = (c: HTMLElement) => c.dataset.char ?? c.textContent ?? ''
+
 // 글자를 span 으로 나누면 글자 쌍 사이 커닝이 빠져 폭이 넓어진다(제목 1246 → 1261px).
 // 캔버스로 쌍마다 커닝 값을 재서 앞 글자의 margin-right 로 되돌린다
 function restoreKerning(el: HTMLElement, chars: HTMLElement[]) {
@@ -162,12 +165,21 @@ function restoreKerning(el: HTMLElement, chars: HTMLElement[]) {
   ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
   const w = (t: string) => ctx.measureText(t).width
   chars.forEach((c, i) => {
-    const next = chars[i + 1]?.textContent
+    // 줄바꿈(<br>)을 사이에 둔 글자끼리는 커닝이 없다
+    const next = c.nextSibling === chars[i + 1] ? charOf(chars[i + 1]) : null
     if (!next) return
-    const a = c.textContent ?? ''
+    const a = charOf(c)
     c.style.marginRight = `${w(a + next) - w(a) - w(next)}px`
   })
 }
+
+// 글자마다 span 으로 나눈다. 스크린리더는 부모의 aria-label 을 읽는다
+const splitChars = (text: string, className: string) =>
+  [...text].map((c, i) => (
+    <span key={i} className={className} data-char={c} aria-hidden="true">
+      {c}
+    </span>
+  ))
 
 const INTRO = 1.5 // 들어오는 시간(초)
 const WAVE_AMP = 24 // 위아래 움직임(px)
@@ -218,11 +230,90 @@ function useTitleIntro(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
+const SUB_LEFT = 'COLORS WE PASSED BY.'
+const SUB_RIGHT = ['익숙해서 지나쳤던 색들을 다시 바라봅니다.', '우리가 수집한 풍경 속에 남겨진 색의 흔적들.']
+
+const TYPE_DELAY = 0 // 타이틀 애니메이션과 동시에 시작(초)
+const TYPE_SPEED = 0.04 // 앞 글자부터 원래 글자로 고정되는 간격(초)
+const SCRAMBLE_LEAD = 0.3 // 첫 글자가 고정되기 전까지 랜덤 글자만 도는 시간(초)
+const SCRAMBLE_SWAP = 0.05 // 랜덤 글자를 바꾸는 간격(초)
+const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+const randomChar = () => SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
+
+// 원래 글자로 폭을 재서 고정한다. 랜덤 글자는 폭이 달라 오른쪽 정렬 줄이 흔들리기 때문
+// 스크램블 중에 다시 재도 보이던 글자는 그대로 되돌린다
+function lockWidths(chars: HTMLElement[]) {
+  const shown = chars.map((c) => c.textContent)
+  chars.forEach((c) => {
+    c.textContent = charOf(c)
+    c.style.width = ''
+  })
+  chars.forEach((c, i) => {
+    c.style.width = getComputedStyle(c).width
+    c.textContent = shown[i]
+  })
+}
+
+// 소개 문구 스크램블: 모든 자리에서 랜덤 알파벳이 바뀌다가, 앞 글자부터 차례로 원래 글자로 고정된다
+function useScramble(refs: RefObject<HTMLElement | null>[]) {
+  useLayoutEffect(() => {
+    const els = refs.map((r) => r.current).filter((el): el is HTMLElement => !!el)
+    const groups = els.map((el) => [...el.querySelectorAll<HTMLElement>('.archiving__type-char')])
+    const layout = () =>
+      els.forEach((el, i) => {
+        restoreKerning(el, groups[i])
+        lockWidths(groups[i])
+      })
+    layout()
+    // 폰트가 늦게 로드되면 다시 잰다
+    let alive = true
+    document.fonts.ready.then(() => alive && layout())
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return () => void (alive = false)
+
+    // 공백은 바꾸지 않는다
+    const slots = groups.map((chars) => chars.filter((c) => charOf(c).trim()))
+    const longest = Math.max(...slots.map((s) => s.length))
+    const clock = { t: 0 }
+    let lastSwap = -Infinity
+    const tween = gsap.to(clock, {
+      t: SCRAMBLE_LEAD + longest * TYPE_SPEED,
+      duration: SCRAMBLE_LEAD + longest * TYPE_SPEED,
+      delay: TYPE_DELAY,
+      ease: 'none',
+      onStart: () => (lastSwap = -Infinity),
+      onUpdate: () => {
+        const settled = Math.floor((clock.t - SCRAMBLE_LEAD) / TYPE_SPEED) + 1
+        const swap = clock.t - lastSwap >= SCRAMBLE_SWAP
+        if (swap) lastSwap = clock.t
+        slots.forEach((chars) =>
+          chars.forEach((c, i) => {
+            if (i < settled) c.textContent = charOf(c)
+            else if (swap) c.textContent = randomChar()
+          }),
+        )
+      },
+      onComplete: () => slots.flat().forEach((c) => (c.textContent = charOf(c))),
+    })
+    // 시작 전(TYPE_DELAY 동안)에도 랜덤 글자를 보여준다
+    slots.flat().forEach((c) => (c.textContent = randomChar()))
+    return () => {
+      alive = false
+      tween.kill()
+      slots.flat().forEach((c) => (c.textContent = charOf(c)))
+    }
+  }, [refs])
+}
+
 export function Archiving() {
   const ref = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   useFitWidth(ref)
   useTitleIntro(titleRef)
+  const subLeftRef = useRef<HTMLParagraphElement>(null)
+  const subRightRef = useRef<HTMLParagraphElement>(null)
+  const scrambleRefs = useMemo(() => [subLeftRef, subRightRef], [])
+  useScramble(scrambleRefs)
 
   return (
     <main ref={ref} className="archiving">
@@ -237,11 +328,13 @@ export function Archiving() {
         </h1>
         <span className="archiving__rule archiving__rule--left" aria-hidden="true" />
         <span className="archiving__rule archiving__rule--right" aria-hidden="true" />
-        <p className="archiving__sub archiving__sub--left">COLORS WE PASSED BY.</p>
-        <p className="archiving__sub archiving__sub--right">
-          익숙해서 지나쳤던 색들을 다시 바라봅니다.
+        <p ref={subLeftRef} className="archiving__sub archiving__sub--left" aria-label={SUB_LEFT}>
+          {splitChars(SUB_LEFT, 'archiving__type-char')}
+        </p>
+        <p ref={subRightRef} className="archiving__sub archiving__sub--right" aria-label={SUB_RIGHT.join(' ')}>
+          {splitChars(SUB_RIGHT[0], 'archiving__type-char')}
           <br />
-          우리가 수집한 풍경 속에 남겨진 색의 흔적들.
+          {splitChars(SUB_RIGHT[1], 'archiving__type-char')}
         </p>
         {ITEMS.map((item) => (
           <img
