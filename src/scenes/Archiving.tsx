@@ -1,5 +1,6 @@
-import type { CSSProperties } from 'react'
+import { useRef, type CSSProperties } from 'react'
 
+import { useFitWidth } from '../lib/useFitWidth'
 import { objectSrc, photoSrc, WASTE_PHOTOS, type WasteObject } from '../lib/waste'
 
 const base = import.meta.env.BASE_URL
@@ -150,8 +151,11 @@ const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : fig
 const at = (x: number, y: number): CSSProperties => ({ left: x, top: y })
 
 export function Archiving() {
+  const ref = useRef<HTMLElement>(null)
+  useFitWidth(ref)
+
   return (
-    <main className="archiving">
+    <main ref={ref} className="archiving">
       <div className="archiving__canvas">
         {/* 상단: 타이틀과 오브젝트 */}
         <h1 className="archiving__title">COLORS WE LEFT BEHIND</h1>

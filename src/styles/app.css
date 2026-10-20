@@ -204,18 +204,18 @@
   object-fit: cover;
 }
 
+/* 피그마 1920 기준 1136.64, 787.32 / 245.76×158 을 칸과 같은 배율로 줄인다 */
 .gacha__start {
   position: absolute;
-  left: 59.2%;
-  top: 72.9%;
-  width: 12.8%;
-  min-width: 150px;
+  left: calc(1136.64px * var(--gacha-scale, 1));
+  top: calc(787.32px * var(--gacha-scale, 1));
+  width: calc(245.76px * var(--gacha-scale, 1));
   aspect-ratio: 246 / 158;
   border: 1px solid #424242;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: clamp(22px, 2.2vw, 48px);
+  font-size: calc(42.24px * var(--gacha-scale, 1));
   font-weight: 700;
   cursor: pointer;
   transition:

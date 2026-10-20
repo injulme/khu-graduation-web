@@ -21,7 +21,6 @@ export const GACHA_CELLS: readonly GachaCell[] = [
 
 export const CELL = 180
 
-const MIN_COLS = 4
-
+// 1920 기준 180px. 더 좁은 화면은 같은 비율로 줄여 1920 과 같은 11×6 배치를 유지한다
 export const cellSize = (viewportWidth: number) =>
-  Math.min(CELL, Math.floor(viewportWidth / MIN_COLS))
+  Math.floor(CELL * Math.min(1, viewportWidth / 1920))

@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { asset } from '../lib/assets'
-import { cellSize, GACHA_CELLS, type GachaCell } from '../lib/gachaCells'
+import { CELL, cellSize, GACHA_CELLS, type GachaCell } from '../lib/gachaCells'
 
 function useBoard() {
   const [board, setBoard] = useState(() => ({ cell: 180, cols: 11, rows: 6 }))
 
   useEffect(() => {
     const measure = () => {
-      const cell = cellSize(innerWidth)
-      setBoard({ cell, cols: Math.ceil(innerWidth / cell), rows: Math.ceil(innerHeight / cell) })
+      // 스크롤바 폭을 빼려고 innerWidth 대신 clientWidth 를 쓴다
+      const { clientWidth: w, clientHeight: h } = document.documentElement
+      const cell = cellSize(w)
+      setBoard({ cell, cols: Math.ceil(w / cell), rows: Math.ceil(h / cell) })
     }
     measure()
     addEventListener('resize', measure)
@@ -57,7 +59,12 @@ export function Gacha() {
   )
 
   return (
-    <main className="gacha" aria-label="가챠">
+    <main
+      className="gacha"
+      aria-label="가챠"
+      // start 버튼이 칸과 같은 비율로 줄어들도록 1920 기준 배율을 넘긴다
+      style={{ '--gacha-scale': cellPx / CELL } as CSSProperties}
+    >
       <div className="gacha__board" style={boardStyle} aria-hidden="true">
         {cells.map((cell, i) => (
           <div
