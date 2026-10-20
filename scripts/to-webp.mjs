@@ -5,7 +5,7 @@ import sharp from 'sharp'
 const SRC = 'assets-src'
 const OUT = 'public/interaction'
 
-const LINE_ART = /^(logo-|title-colors|intro-paragraph|archive-header|archive-caps-|index-col-|label-|line-|nav|arrow-down)/
+const LINE_ART = /^(logo-|nav)/
 
 await mkdir(SRC, { recursive: true })
 
