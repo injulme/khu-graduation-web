@@ -151,15 +151,69 @@ const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : fig
 
 const at = (x: number, y: number): CSSProperties => ({ left: x, top: y })
 
-// 타이틀: 화면 왼쪽 밖에서 제자리로 1.5초 동안 일정한 속도로 들어온다
+const TITLE = 'COLORS WE LEFT BEHIND'
+
+// 글자를 span 으로 나누면 글자 쌍 사이 커닝이 빠져 폭이 넓어진다(제목 1246 → 1261px).
+// 캔버스로 쌍마다 커닝 값을 재서 앞 글자의 margin-right 로 되돌린다
+function restoreKerning(el: HTMLElement, chars: HTMLElement[]) {
+  const ctx = document.createElement('canvas').getContext('2d')
+  if (!ctx) return
+  const cs = getComputedStyle(el)
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
+  const w = (t: string) => ctx.measureText(t).width
+  chars.forEach((c, i) => {
+    const next = chars[i + 1]?.textContent
+    if (!next) return
+    const a = c.textContent ?? ''
+    c.style.marginRight = `${w(a + next) - w(a) - w(next)}px`
+  })
+}
+
+const INTRO = 1.5 // 들어오는 시간(초)
+const WAVE_AMP = 24 // 위아래 움직임(px)
+const WAVE_CYCLES = 1 // 들어오는 동안 한 글자가 오르내리는 횟수
+const WAVE_LENGTH = 20 // 물결 한 개가 걸치는 글자 수
+const WAVE_FADE = 0.2 // 끝부분에서 물결이 잦아드는 구간(전체 대비)
+
+// 타이틀: 화면 왼쪽 밖에서 제자리로 1.5초 동안 일정한 속도로 들어온다.
+// 들어오는 동안 글자마다 위아래(WAVE_AMP)로 움직이고, 옆 글자와 박자를 어긋나게 해 물결처럼 이어진다
 function useTitleIntro(ref: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
     const el = ref.current
-    if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    // 타이틀 왼쪽 여백 + 타이틀 폭만큼 밀어 두면 화면 밖에서 시작한다
-    const tween = gsap.from(el, { x: -(el.offsetLeft + el.offsetWidth), duration: 1.5, ease: 'none' })
+    if (!el) return
+    const chars = [...el.querySelectorAll<HTMLElement>('.archiving__char')]
+    // 폰트가 늦게 로드되면 다시 잰다
+    restoreKerning(el, chars)
+    let alive = true
+    document.fonts.ready.then(() => alive && restoreKerning(el, chars))
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return () => void (alive = false)
+
+    const ctx = gsap.context(() => {
+      // 타이틀 왼쪽 여백 + 타이틀 폭만큼 밀어 두면 화면 밖에서 시작한다
+      gsap.from(el, { x: -(el.offsetLeft + el.offsetWidth), duration: INTRO, ease: 'none' })
+
+      const setY = chars.map((c) => gsap.quickSetter(c, 'y', 'px'))
+      const wave = { p: 0 }
+      gsap.to(wave, {
+        p: 1,
+        duration: INTRO,
+        ease: 'none',
+        onUpdate: () => {
+          const { p } = wave
+          // 끝 구간에서 진폭을 부드럽게 0 으로 줄여 제자리에서 멈춘다
+          const fade = p < 1 - WAVE_FADE ? 1 : 0.5 * (1 + Math.cos((Math.PI * (p - 1 + WAVE_FADE)) / WAVE_FADE))
+          setY.forEach((set, i) => {
+            const phase = 2 * Math.PI * (WAVE_CYCLES * p - i / WAVE_LENGTH)
+            set(WAVE_AMP * Math.sin(phase) * fade)
+          })
+        },
+        onComplete: () => setY.forEach((set) => set(0)),
+      })
+    }, el)
     return () => {
-      tween.revert()
+      alive = false
+      ctx.revert()
+      chars.forEach((c) => gsap.set(c, { clearProps: 'transform' }))
     }
   }, [ref])
 }
@@ -174,7 +228,13 @@ export function Archiving() {
     <main ref={ref} className="archiving">
       <div className="archiving__canvas">
         {/* 상단: 타이틀과 오브젝트 */}
-        <h1 ref={titleRef} className="archiving__title">COLORS WE LEFT BEHIND</h1>
+        <h1 ref={titleRef} className="archiving__title" aria-label={TITLE}>
+          {[...TITLE].map((c, i) => (
+            <span key={i} className="archiving__char" aria-hidden="true">
+              {c}
+            </span>
+          ))}
+        </h1>
         <span className="archiving__rule archiving__rule--left" aria-hidden="true" />
         <span className="archiving__rule archiving__rule--right" aria-hidden="true" />
         <p className="archiving__sub archiving__sub--left">COLORS WE PASSED BY.</p>

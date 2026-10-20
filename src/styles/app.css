@@ -916,3 +916,9 @@
 .archiving__row--fixed {
   height: 409px;
 }
+
+/* 타이틀 글자 단위 애니메이션용. 공백 폭 유지 */
+.archiving__char {
+  display: inline-block;
+  white-space: pre;
+}
