@@ -1,0 +1,883 @@
+{
+ "object": [
+  {
+   "name": "box-adidas",
+   "from": "image 6345927.png"
+  },
+  {
+   "name": "can-coke-crushed",
+   "from": "image 6345929.png"
+  },
+  {
+   "name": "bottle-red",
+   "from": "image 6345951.png"
+  },
+  {
+   "name": "can-green-crushed",
+   "from": "image 6345952.png"
+  },
+  {
+   "name": "bag-lays",
+   "from": "image 6345953.png"
+  },
+  {
+   "name": "can-pocari",
+   "from": "image 6345954.png"
+  },
+  {
+   "name": "cup-dome",
+   "from": "image 6345956.png"
+  },
+  {
+   "name": "sofa-mint",
+   "from": "image 6345957.png"
+  },
+  {
+   "name": "part-blue",
+   "from": "image 6345958.png"
+  },
+  {
+   "name": "handle-yellow",
+   "from": "image 6345959.png"
+  },
+  {
+   "name": "can-coke",
+   "from": "image 6345960.png"
+  },
+  {
+   "name": "bottle-crushed",
+   "from": "image 6345961.png"
+  },
+  {
+   "name": "tray-foam",
+   "from": "image 6345962.png"
+  },
+  {
+   "name": "bag-white",
+   "from": "image 6345963.png"
+  },
+  {
+   "name": "can-pringles-red",
+   "from": "image 6345966.png"
+  },
+  {
+   "name": "bottle-vita",
+   "from": "image 6345967.png"
+  },
+  {
+   "name": "lighter-green",
+   "from": "image 6345968.png"
+  },
+  {
+   "name": "wrapper-gold",
+   "from": "image 6345974.png"
+  },
+  {
+   "name": "glove-black",
+   "from": "image 6345994.png"
+  },
+  {
+   "name": "bag-pink",
+   "from": "image 6345995.png"
+  },
+  {
+   "name": "net-red",
+   "from": "image 6346057.png"
+  },
+  {
+   "name": "ashtray-jar",
+   "from": "image 6346058.png"
+  },
+  {
+   "name": "cup-yogurt",
+   "from": "image 6346059.png"
+  },
+  {
+   "name": "box-stack",
+   "from": "image 6346060.png"
+  },
+  {
+   "name": "lid-red",
+   "from": "image 6346061.png"
+  },
+  {
+   "name": "tube-red",
+   "from": "image 6346062.png"
+  },
+  {
+   "name": "can-gatorade",
+   "from": "image 6346063.png"
+  },
+  {
+   "name": "bottle-barley",
+   "from": "image 6346064.png"
+  },
+  {
+   "name": "cup-coffee",
+   "from": "image 6346065.png"
+  },
+  {
+   "name": "cup-noodle",
+   "from": "image 6346067.png"
+  },
+  {
+   "name": "cap-blue",
+   "from": "image 6346068.png"
+  },
+  {
+   "name": "straw-red",
+   "from": "image 6346069.png"
+  },
+  {
+   "name": "box-foam",
+   "from": "image 6346071.png"
+  },
+  {
+   "name": "umbrella-purple",
+   "from": "image 6346072.png"
+  },
+  {
+   "name": "can-tuna",
+   "from": "image 6346073.png"
+  },
+  {
+   "name": "can-pringles-green",
+   "from": "image 6346074.png"
+  },
+  {
+   "name": "floss-pick",
+   "from": "image 6346075.png"
+  },
+  {
+   "name": "can-cantata",
+   "from": "image 6346076.png"
+  },
+  {
+   "name": "bag-snack-red",
+   "from": "image 6346077.png"
+  },
+  {
+   "name": "bottle-purple",
+   "from": "image 6346078.png"
+  },
+  {
+   "name": "bag-blue",
+   "from": "image 6346079.png"
+  },
+  {
+   "name": "doll-rabbit",
+   "from": "image 6346107.png"
+  },
+  {
+   "name": "bag-trash-blue",
+   "from": "IMG_6847 1.png"
+  },
+  {
+   "name": "bin-pink",
+   "from": "IMG_6850 1.png"
+  },
+  {
+   "name": "net-green",
+   "from": "그물 누끼 1.png"
+  },
+  {
+   "name": "glove-purple",
+   "from": "보라 5.png"
+  }
+ ],
+ "photo": [
+  {
+   "name": "Red-01",
+   "color": "Red",
+   "ratio": 0.12,
+   "from": "4e1c0197-b296-4cb4-a011-20a7c19cbff8.jpg",
+   "no": 1
+  },
+  {
+   "name": "Red-02",
+   "color": "Red",
+   "ratio": 0.122,
+   "from": "556eba7e-0912-4824-8e8c-f03a6943c9f3.jpg",
+   "no": 2
+  },
+  {
+   "name": "Red-03",
+   "color": "Red",
+   "ratio": 0.435,
+   "from": "786b7aea-f195-4fc9-a16d-3c866825f551.jpg",
+   "no": 3
+  },
+  {
+   "name": "Red-04",
+   "color": "Red",
+   "ratio": 0.184,
+   "from": "Mask group 복사본.png",
+   "no": 4
+  },
+  {
+   "name": "Red-05",
+   "color": "Red",
+   "ratio": 0.403,
+   "from": "Mask group-1.png",
+   "no": 5
+  },
+  {
+   "name": "Red-06",
+   "color": "Red",
+   "ratio": 0.084,
+   "from": "Mask group-4 복사본.png",
+   "no": 6
+  },
+  {
+   "name": "Red-07",
+   "color": "Red",
+   "ratio": 0.061,
+   "from": "Mask group-5.png",
+   "no": 7
+  },
+  {
+   "name": "Red-08",
+   "color": "Red",
+   "ratio": 0.276,
+   "from": "Mask group-7.png",
+   "no": 8
+  },
+  {
+   "name": "Red-09",
+   "color": "Red",
+   "ratio": 0.241,
+   "from": "b131b95b-d3ac-49ba-9584-5558546858ca.jpg",
+   "no": 9
+  },
+  {
+   "name": "Red-10",
+   "color": "Red",
+   "ratio": 0.196,
+   "from": "f1b3ff4a-546a-4b88-afc2-a24c18ff22f0.jpg",
+   "no": 10
+  },
+  {
+   "name": "Red-11",
+   "color": "Red",
+   "ratio": 0.15,
+   "from": "0f9c4082-ea16-49a9-8406-e94558b231ec.png",
+   "no": 11
+  },
+  {
+   "name": "Red-12",
+   "color": "Red",
+   "ratio": 0.043,
+   "from": "595692d8-299d-4bc5-b139-52c74f6ab56d.png",
+   "no": 12
+  },
+  {
+   "name": "Red-13",
+   "color": "Red",
+   "ratio": 0.478,
+   "from": "8ae6d8fe-45e6-4c9a-a35d-ec49212c30af.png",
+   "no": 13
+  },
+  {
+   "name": "Red-14",
+   "color": "Red",
+   "ratio": 0.413,
+   "from": "Frame 2043688031.jpg",
+   "no": 14
+  },
+  {
+   "name": "Red-15",
+   "color": "Red",
+   "ratio": 0.713,
+   "from": "Frame 2043688034.jpg",
+   "no": 15
+  },
+  {
+   "name": "Red-16",
+   "color": "Red",
+   "ratio": 0.118,
+   "from": "Frame 2043688036.jpg",
+   "no": 16
+  },
+  {
+   "name": "Red-17",
+   "color": "Red",
+   "ratio": 0.043,
+   "from": "Frame 2043688045.jpg",
+   "no": 17
+  },
+  {
+   "name": "Red-18",
+   "color": "Red",
+   "ratio": 0.219,
+   "from": "Frame 2043688069.jpg",
+   "no": 18
+  },
+  {
+   "name": "Red-19",
+   "color": "Red",
+   "ratio": 0.09,
+   "from": "Frame 2043688170.jpg",
+   "no": 19
+  },
+  {
+   "name": "Red-20",
+   "color": "Red",
+   "ratio": 0.068,
+   "from": "adb23c16-dc04-4e92-ad61-08cef496d13b.png",
+   "no": 20
+  },
+  {
+   "name": "Red-21",
+   "color": "Red",
+   "ratio": 0.131,
+   "from": "b2d86be8-e80f-4e8f-864e-653067506491.png",
+   "no": 21
+  },
+  {
+   "name": "Orange-01",
+   "color": "Orange",
+   "ratio": 0.088,
+   "from": "Mask group.png",
+   "no": 22
+  },
+  {
+   "name": "Orange-02",
+   "color": "Orange",
+   "ratio": 0.179,
+   "from": "2996f746-8740-44c1-b24d-11454b5c9d18.jpg",
+   "no": 23
+  },
+  {
+   "name": "Orange-03",
+   "color": "Orange",
+   "ratio": 0.47,
+   "from": "604286e9-f210-45d8-bcec-a703e7e66d1a.jpg",
+   "no": 24
+  },
+  {
+   "name": "Orange-04",
+   "color": "Orange",
+   "ratio": 0.68,
+   "from": "Mask group-1 복사본.png",
+   "no": 25
+  },
+  {
+   "name": "Orange-05",
+   "color": "Orange",
+   "ratio": 0.304,
+   "from": "Mask group-3.png",
+   "no": 26
+  },
+  {
+   "name": "Orange-06",
+   "color": "Orange",
+   "ratio": 0.021,
+   "from": "Mask group-4.png",
+   "no": 27
+  },
+  {
+   "name": "Orange-07",
+   "color": "Orange",
+   "ratio": 0.371,
+   "from": "a8891756-bdfd-46e6-ad28-abe97f461caf.jpg",
+   "no": 28
+  },
+  {
+   "name": "Orange-08",
+   "color": "Orange",
+   "ratio": 0.136,
+   "from": "d6f4cfed-b0c6-4ce3-98ef-5bdf30fd82f3.png",
+   "no": 29
+  },
+  {
+   "name": "Orange-09",
+   "color": "Orange",
+   "ratio": 0.335,
+   "from": "2c411763-8035-47f1-8f9f-88c153a5fae0.png",
+   "no": 30
+  },
+  {
+   "name": "Orange-10",
+   "color": "Orange",
+   "ratio": 0.166,
+   "from": "8be7444c-6c27-4b07-849d-985c3defae80.png",
+   "no": 31
+  },
+  {
+   "name": "Orange-11",
+   "color": "Orange",
+   "ratio": 0.214,
+   "from": "Frame 2043688039.jpg",
+   "no": 32
+  },
+  {
+   "name": "Orange-12",
+   "color": "Orange",
+   "ratio": 0.15,
+   "from": "Frame 2043688042.jpg",
+   "no": 33
+  },
+  {
+   "name": "Orange-13",
+   "color": "Orange",
+   "ratio": 0.54,
+   "from": "Frame 2043688046.jpg",
+   "no": 34
+  },
+  {
+   "name": "Orange-14",
+   "color": "Orange",
+   "ratio": 0.237,
+   "from": "Frame 2043688052.jpg",
+   "no": 35
+  },
+  {
+   "name": "Orange-15",
+   "color": "Orange",
+   "ratio": 0.102,
+   "from": "Frame 2043688172.jpg",
+   "no": 36
+  },
+  {
+   "name": "Orange-16",
+   "color": "Orange",
+   "ratio": 0.125,
+   "from": "Frame 2043688176.jpg",
+   "no": 37
+  },
+  {
+   "name": "Orange-17",
+   "color": "Orange",
+   "ratio": 0.088,
+   "from": "Frame 2043688178.jpg",
+   "no": 38
+  },
+  {
+   "name": "Orange-18",
+   "color": "Orange",
+   "ratio": 0.468,
+   "from": "Frame 2043688183.png",
+   "no": 39
+  },
+  {
+   "name": "Orange-19",
+   "color": "Orange",
+   "ratio": 0.088,
+   "from": "Frame 2043688186.png",
+   "no": 40
+  },
+  {
+   "name": "Orange-20",
+   "color": "Orange",
+   "ratio": 0.122,
+   "from": "Frame 2043688187.png",
+   "no": 41
+  },
+  {
+   "name": "Orange-21",
+   "color": "Orange",
+   "ratio": 0.1,
+   "from": "Frame 2043688189.png",
+   "no": 42
+  },
+  {
+   "name": "Orange-22",
+   "color": "Orange",
+   "ratio": 0.495,
+   "from": "be19be2d-c2e1-4018-a1e9-c4cc7caa54f4.png",
+   "no": 43
+  },
+  {
+   "name": "Yellow-01",
+   "color": "Yellow",
+   "ratio": 0.028,
+   "from": "0f05fbcd-1c79-41f9-a13a-3e9c0d73213e.png",
+   "no": 44
+  },
+  {
+   "name": "Yellow-02",
+   "color": "Yellow",
+   "ratio": 0.47,
+   "from": "Frame 2043688048.jpg",
+   "no": 45
+  },
+  {
+   "name": "Yellow-03",
+   "color": "Yellow",
+   "ratio": 0.609,
+   "from": "Frame 2043688049.jpg",
+   "no": 46
+  },
+  {
+   "name": "Yellow-04",
+   "color": "Yellow",
+   "ratio": 0.184,
+   "from": "Frame 2043688050.jpg",
+   "no": 47
+  },
+  {
+   "name": "Yellow-05",
+   "color": "Yellow",
+   "ratio": 0.13,
+   "from": "Frame 2043688051.jpg",
+   "no": 48
+  },
+  {
+   "name": "Yellow-06",
+   "color": "Yellow",
+   "ratio": 0.17,
+   "from": "Frame 2043688054.jpg",
+   "no": 49
+  },
+  {
+   "name": "Yellow-07",
+   "color": "Yellow",
+   "ratio": 0.059,
+   "from": "Frame 2043688182.png",
+   "no": 50
+  },
+  {
+   "name": "Yellow-08",
+   "color": "Yellow",
+   "ratio": 0.24,
+   "from": "a93a8be0-0c03-40d8-afb5-f958eaeb93f3.png",
+   "no": 51
+  },
+  {
+   "name": "Yellow-09",
+   "color": "Yellow",
+   "ratio": 0.233,
+   "from": "e5f152c7-4998-4933-a152-72a7f8df17b8.png",
+   "no": 52
+  },
+  {
+   "name": "Green-01",
+   "color": "Green",
+   "ratio": 0.099,
+   "from": "Mask group-2 복사본.png",
+   "no": 53
+  },
+  {
+   "name": "Green-02",
+   "color": "Green",
+   "ratio": 0.029,
+   "from": "Mask group-5 복사본.png",
+   "no": 54
+  },
+  {
+   "name": "Green-03",
+   "color": "Green",
+   "ratio": 0.194,
+   "from": "a7ccf1b0-73a8-4150-867e-c11e58867462.jpg",
+   "no": 55
+  },
+  {
+   "name": "Green-04",
+   "color": "Green",
+   "ratio": 0.476,
+   "from": "3c1e6f58-9050-4473-87e9-f6c730cbb979.png",
+   "no": 56
+  },
+  {
+   "name": "Green-05",
+   "color": "Green",
+   "ratio": 0.118,
+   "from": "6d87b109-b31b-4046-b533-a148b55c71e4.png",
+   "no": 57
+  },
+  {
+   "name": "Green-06",
+   "color": "Green",
+   "ratio": 0.021,
+   "from": "Frame 2043688056.jpg",
+   "no": 58
+  },
+  {
+   "name": "Green-07",
+   "color": "Green",
+   "ratio": 0.05,
+   "from": "Frame 2043688057.jpg",
+   "no": 59
+  },
+  {
+   "name": "Green-08",
+   "color": "Green",
+   "ratio": 0.243,
+   "from": "Frame 2043688059.jpg",
+   "no": 60
+  },
+  {
+   "name": "Green-09",
+   "color": "Green",
+   "ratio": 0.471,
+   "from": "Frame 2043688173.jpg",
+   "no": 61
+  },
+  {
+   "name": "Green-10",
+   "color": "Green",
+   "ratio": 0.056,
+   "from": "Frame 2043688174.jpg",
+   "no": 62
+  },
+  {
+   "name": "Green-11",
+   "color": "Green",
+   "ratio": 0.096,
+   "from": "Frame 2043688179.jpg",
+   "no": 63
+  },
+  {
+   "name": "Blue-01",
+   "color": "Blue",
+   "ratio": 0.103,
+   "from": "504900a1-9c47-4b33-a8c3-b6cedeb6cbdc.png",
+   "no": 64
+  },
+  {
+   "name": "Blue-02",
+   "color": "Blue",
+   "ratio": 0.097,
+   "from": "Mask group-2.png",
+   "no": 65
+  },
+  {
+   "name": "Blue-03",
+   "color": "Blue",
+   "ratio": 0.304,
+   "from": "Mask group-3 복사본.png",
+   "no": 66
+  },
+  {
+   "name": "Blue-04",
+   "color": "Blue",
+   "ratio": 0.313,
+   "from": "00f1039b-9776-4260-8aff-e0bbc013eb90.png",
+   "no": 67
+  },
+  {
+   "name": "Blue-05",
+   "color": "Blue",
+   "ratio": 0.324,
+   "from": "1eb88714-9494-4d6b-b359-481bbb3d2ef8.png",
+   "no": 68
+  },
+  {
+   "name": "Blue-06",
+   "color": "Blue",
+   "ratio": 0.227,
+   "from": "4e0ee9fa-5b5c-45c9-89cb-b468d7a8f09e.png",
+   "no": 69
+  },
+  {
+   "name": "Blue-07",
+   "color": "Blue",
+   "ratio": 0.219,
+   "from": "Frame 2043688060.jpg",
+   "no": 70
+  },
+  {
+   "name": "Blue-08",
+   "color": "Blue",
+   "ratio": 0.136,
+   "from": "Frame 2043688062.jpg",
+   "no": 71
+  },
+  {
+   "name": "Blue-09",
+   "color": "Blue",
+   "ratio": 0.111,
+   "from": "Frame 2043688064.jpg",
+   "no": 72
+  },
+  {
+   "name": "Blue-10",
+   "color": "Blue",
+   "ratio": 0.295,
+   "from": "Frame 2043688065.jpg",
+   "no": 73
+  },
+  {
+   "name": "Blue-11",
+   "color": "Blue",
+   "ratio": 0.35,
+   "from": "Frame 2043688180.jpg",
+   "no": 74
+  },
+  {
+   "name": "Blue-12",
+   "color": "Blue",
+   "ratio": 0.074,
+   "from": "Frame 2043688188.png",
+   "no": 75
+  },
+  {
+   "name": "Blue-13",
+   "color": "Blue",
+   "ratio": 0.049,
+   "from": "becd2ca0-a312-44ae-a984-615029e33936.png",
+   "no": 76
+  },
+  {
+   "name": "Purple-01",
+   "color": "Purple",
+   "ratio": 0.147,
+   "from": "704df240-0679-4b5f-af36-b289dc8cbe4d.png",
+   "no": 77
+  },
+  {
+   "name": "Purple-02",
+   "color": "Purple",
+   "ratio": 0.559,
+   "from": "Mask group 복사본 2.png",
+   "no": 78
+  },
+  {
+   "name": "Purple-03",
+   "color": "Purple",
+   "ratio": 0.502,
+   "from": "bc0b36b1-a9f2-47df-b277-5c7a6b573566.png",
+   "no": 79
+  },
+  {
+   "name": "Purple-04",
+   "color": "Purple",
+   "ratio": 0.4,
+   "from": "f9d29f10-2cf5-4351-abb1-9199d9496d7f.png",
+   "no": 80
+  },
+  {
+   "name": "Purple-05",
+   "color": "Purple",
+   "ratio": 0.447,
+   "from": "vldzm.png",
+   "no": 81
+  },
+  {
+   "name": "Purple-06",
+   "color": "Purple",
+   "ratio": 0.327,
+   "from": "우산.png",
+   "no": 82
+  },
+  {
+   "name": "Purple-07",
+   "color": "Purple",
+   "ratio": 0.157,
+   "from": "Frame 2043688033.jpg",
+   "no": 83
+  },
+  {
+   "name": "Purple-08",
+   "color": "Purple",
+   "ratio": 0.401,
+   "from": "Frame 2043688035.jpg",
+   "no": 84
+  },
+  {
+   "name": "Purple-09",
+   "color": "Purple",
+   "ratio": 0.321,
+   "from": "Frame 2043688068.jpg",
+   "no": 85
+  },
+  {
+   "name": "Brown-01",
+   "color": "Brown",
+   "ratio": 0.124,
+   "from": "Frame 2043688044.jpg",
+   "no": 86
+  },
+  {
+   "name": "Black-01",
+   "color": "Black",
+   "ratio": 0.014,
+   "from": "0ba83fb6-79eb-47b0-8015-1ef7d30892b7.jpg",
+   "no": 87
+  },
+  {
+   "name": "Black-02",
+   "color": "Black",
+   "ratio": 0,
+   "from": "8ac5b05a-b6e2-4bdd-9cdf-dc1174156f12.png",
+   "no": 88
+  },
+  {
+   "name": "Black-03",
+   "color": "Black",
+   "ratio": 0.015,
+   "from": "Mask group-6.png",
+   "no": 89
+  },
+  {
+   "name": "Black-04",
+   "color": "Black",
+   "ratio": 0.014,
+   "from": "타이오.png",
+   "no": 90
+  },
+  {
+   "name": "Black-05",
+   "color": "Black",
+   "ratio": 0.01,
+   "from": "Frame 2043688070.jpg",
+   "no": 91
+  },
+  {
+   "name": "Black-06",
+   "color": "Black",
+   "ratio": 0.006,
+   "from": "Frame 2043688167.jpg",
+   "no": 92
+  },
+  {
+   "name": "Black-07",
+   "color": "Black",
+   "ratio": 0,
+   "from": "Frame 2043688171.jpg",
+   "no": 93
+  },
+  {
+   "name": "Black-08",
+   "color": "Black",
+   "ratio": 0,
+   "from": "Frame 2043688177.jpg",
+   "no": 94
+  },
+  {
+   "name": "White-01",
+   "color": "White",
+   "ratio": 0.019,
+   "from": "Mask group.png",
+   "no": 95
+  },
+  {
+   "name": "White-02",
+   "color": "White",
+   "ratio": 0.001,
+   "from": "c5763fd1-4de8-43d7-84fb-9830c7863288.jpg",
+   "no": 96
+  },
+  {
+   "name": "White-03",
+   "color": "White",
+   "ratio": 0.002,
+   "from": "564b12b6-2105-40a4-ba04-1b07d5d07be2.png",
+   "no": 97
+  },
+  {
+   "name": "White-04",
+   "color": "White",
+   "ratio": 0,
+   "from": "Frame 2043688071.jpg",
+   "no": 98
+  },
+  {
+   "name": "White-05",
+   "color": "White",
+   "ratio": 0.001,
+   "from": "Frame 2043688181.jpg",
+   "no": 99
+  }
+ ]
+}

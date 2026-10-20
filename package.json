@@ -1,0 +1,33 @@
+{
+  "name": "khu-graduation-web",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "yarn@3.6.4",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "sync:sizes": "node scripts/sync-sizes.mjs",
+    "assets:webp": "node scripts/to-webp.mjs",
+    "assets:waste": "node scripts/waste-webp.mjs",
+    "assets:waste:import": "node scripts/waste-import.mjs",
+    "assets:font": "node scripts/to-woff2.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "sharp": "^0.35.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}
