@@ -3,7 +3,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import { useFitWidth } from '../lib/useFitWidth'
-import { objectSrc, photoSrc, WASTE_PHOTOS, type WasteObject } from '../lib/waste'
+import { inkOn } from '../lib/objects'
+import { objectSrc, photoSrc, WASTE_PHOTOS, type WasteColor, type WasteObject } from '../lib/waste'
 
 const base = import.meta.env.BASE_URL
 const calloutSrc = (name: string) => `${base}archiving/${name}.svg`
@@ -81,7 +82,25 @@ const RINGS = [
 ]
 
 const MATERIALS = ['Paper', 'Glass', 'Metal', 'Plastic', 'Plastic Film', 'Other']
-const COLORS = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Brown', 'Black', 'White']
+const COLORS: WasteColor[] = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Brown', 'Black', 'White']
+
+// colors 목록 hover 배경색. 프로젝트·피그마에 색 이름별로 정해 둔 값이 없어 직접 정한다 ('#rrggbb')
+// null 이면 materials 와 같은 검정. 글자색은 배경 밝기에 맞춰 검정/흰색이 자동으로 정해진다
+const COLOR_FILL: Record<WasteColor, string | null> = {
+  Red: '#FF0000',
+  Orange: '#FF6200',
+  Yellow: '#FFEA00',
+  Green: '#00FF47',
+  Blue: '#006DFF',
+  Purple: '#9500FF',
+  Brown: '#673711',
+  Black: '#000000',
+  White: '#FFFFFF',
+}
+
+// hover 배경색과 그 위 글자색을 CSS 변수로 넘긴다
+const fillStyle = (fill: string | null) =>
+  (fill ? { '--fill': fill, '--fill-ink': inkOn(fill) } : undefined) as CSSProperties | undefined
 
 // 사진 그리드: 피그마 블록 → 줄 → 칸 순서.
 // 문자열은 waste 사진 이름, 숫자는 피그마 레이어명으로 파일을 특정할 수 없어 피그마에서 내보낸 칸(Mask group 노드 id 140:xxxx)
@@ -682,7 +701,7 @@ export function Archiving() {
         {/* Similar Colors */}
         <ul className="archiving__list" style={at(-1, 4337)}>
           {COLORS.map((c) => (
-            <li key={c} className="archiving__list-item archiving__list-item--color">
+            <li key={c} className="archiving__list-item archiving__list-item--color" style={fillStyle(COLOR_FILL[c])}>
               <span className="archiving__rise archiving__rise--line">
                 <span className="archiving__rise-inner" data-rise="colors">
                   {c}

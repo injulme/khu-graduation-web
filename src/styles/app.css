@@ -859,9 +859,18 @@ body:has(.archiving) * {
   list-style: none;
 }
 
+/* 줄 박스는 위 구분선 바로 아래(-20.5px)부터 자기 구분선까지라 hover 영역과 배경이 줄 칸과 맞는다. 글자 위치는 그대로 */
 .archiving__list-item {
   position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
   height: 110px;
+  margin: -20.5px 0 20.5px;
+  padding-top: 20.5px;
+  /* Montserrat 가 가변 폰트라 굵기도 중간값을 거치며 부드럽게 바뀐다 */
+  transition:
+    color var(--fill-duration) var(--fill-ease),
+    font-weight var(--fill-duration) var(--fill-ease);
   color: #030303;
   font-family: 'Montserrat', sans-serif;
   font-size: 50px;
@@ -871,10 +880,37 @@ body:has(.archiving) * {
   white-space: nowrap;
 }
 
+/* hover 배경: 아래에서 위로 차오르고, 벗어나면 아래로 내려간다 */
+.archiving__list {
+  --fill-duration: 0.45s;
+  --fill-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.archiving__list-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--fill, #000000);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform var(--fill-duration) var(--fill-ease);
+}
+
+/* 첫 줄 색(:first-child)보다 우선하도록 목록 클래스까지 붙인다 */
+.archiving__list .archiving__list-item:hover {
+  color: var(--fill-ink, #ffffff);
+  font-weight: 700;
+}
+
+.archiving__list-item:hover::before {
+  transform: scaleY(1);
+}
+
 .archiving__list-item::after {
   content: '';
   position: absolute;
-  top: 89.5px;
+  top: 110px;
   left: 0;
   width: 100%;
   border-top: 1px solid #000000;
