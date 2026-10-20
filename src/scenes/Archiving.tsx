@@ -492,6 +492,29 @@ function useRise(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
+// Waste Type · Similar Colors 큰 제목: 화면에 보이면 한 번, data-slide 방향의 화면 바깥에서 제자리로 들어온다
+const SLIDE_DURATION = 1.2 // 들어오는 시간(초)
+const SLIDE_VIEW_START = 'top 85%'
+
+function useSlideIn(ref: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const ctx = gsap.context(() => {
+      root.querySelectorAll<HTMLElement>('[data-slide]').forEach((el) => {
+        gsap.from(el, {
+          // 왼쪽이면 오른쪽 끝이 화면 왼쪽 밖, 오른쪽이면 왼쪽 끝이 화면 오른쪽 밖에 있는 데서 출발 (1920 기준 px)
+          x: () => (el.dataset.slide === 'left' ? -(el.offsetLeft + el.offsetWidth) : root.offsetWidth - el.offsetLeft),
+          duration: SLIDE_DURATION,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: SLIDE_VIEW_START, once: true },
+        })
+      })
+    }, root)
+    return () => ctx.revert()
+  }, [ref])
+}
+
 const INK_DURATION = 0.5 // 검정이 퍼지는 시간(초)
 // 원 반지름 71% 면 단어 박스 모서리까지 덮는다 (clip-path circle 의 % 기준은 대각선/√2)
 const INK_FULL = 'circle(71% at 50% 50%)'
@@ -528,6 +551,7 @@ export function Archiving() {
   usePinFloat(ref)
   useLineHighlight(ref)
   useRise(ref)
+  useSlideIn(ref)
 
   return (
     <main ref={ref} className="archiving">
@@ -638,6 +662,10 @@ export function Archiving() {
         {/* 캔 더미 사진: 레이어명이 로컬 파일과 맞지 않아 피그마 140:2152 내보내기 사용 */}
         <img className="archiving__photo" src={figmaSrc('cans')} alt="" style={at(329, 3505)} />
         <span className="archiving__paren" style={at(799, 3571)}>)</span>
+        {/* 피그마에는 없음. Similar Colors 제목과 짝을 맞춰 캔 사진 아래 왼쪽에 둔다 */}
+        <h2 className="archiving__section-title archiving__section-title--waste" data-slide="left">
+          Waste Type
+        </h2>
         <ul className="archiving__list" style={at(1109, 3451)}>
           {MATERIALS.map((m) => (
             <li key={m} className="archiving__list-item archiving__list-item--material">
@@ -657,7 +685,9 @@ export function Archiving() {
         <span className="archiving__paren" style={at(1051, 4686.5)}>(</span>
         <img className="archiving__photo" src={photoSrc('Blue-11')} alt="" style={at(1220, 4621)} />
         <span className="archiving__paren" style={at(1686, 4686.5)}>)</span>
-        <h2 className="archiving__similar">Similar Colors</h2>
+        <h2 className="archiving__section-title archiving__section-title--similar" data-slide="right">
+          Similar Colors
+        </h2>
       </div>
 
       {/* 사진 그리드 */}

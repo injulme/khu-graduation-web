@@ -887,10 +887,9 @@ body:has(.archiving) * {
   padding-left: 594px;
 }
 
-.archiving__similar {
+/* Waste Type · Similar Colors 큰 제목. 화면 안에 다 보이도록 좌우 끝에서 80px(상단 타이틀 여백과 같음) */
+.archiving__section-title {
   position: absolute;
-  top: 5031px;
-  left: 1301px;
   margin: 0;
   color: #030303;
   font-family: 'Montserrat', sans-serif;
@@ -898,6 +897,18 @@ body:has(.archiving) * {
   font-weight: 700;
   line-height: 122px;
   white-space: nowrap;
+}
+
+/* 피그마에 없는 제목. 캔 사진 아래 35px (Similar Colors 와 사진 간격이 같다) */
+.archiving__section-title--waste {
+  top: 3915px;
+  left: 80px;
+}
+
+/* 피그마는 left 1301 이라 오른쪽이 화면 밖으로 넘친다 */
+.archiving__section-title--similar {
+  top: 5031px;
+  right: 80px;
 }
 
 /* 사진 그리드 — 피그마 오토레이아웃 그대로 */
