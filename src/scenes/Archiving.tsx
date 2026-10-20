@@ -450,7 +450,7 @@ function useLineHighlight(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
-// Waste Type · Similar Colors: 스크롤로 화면에 들어오면 단어마다 아래에서 위로 올라오며 나타난다
+// Waste Type · Similar Colors 단어, 재질·색 목록: 스크롤로 화면에 들어오면 단어마다 아래에서 위로 올라오며 나타난다
 // 같은 group 끼리 첫 단어가 보일 때 함께 시작하고, 단어 사이는 RISE_STAGGER 만큼 늦게 올라온다
 const RISE_DURATION = 0.8 // 한 단어가 올라오는 시간(초)
 const RISE_STAGGER = 0.15 // 다음 단어가 늦게 시작하는 간격(초)
@@ -669,7 +669,12 @@ export function Archiving() {
         <ul className="archiving__list" style={at(1109, 3451)}>
           {MATERIALS.map((m) => (
             <li key={m} className="archiving__list-item archiving__list-item--material">
-              {m}
+              {/* 줄 높이 박스 밖은 잘라서 글자가 아래에서 올라오며 나타난다 (useRise) */}
+              <span className="archiving__rise archiving__rise--line">
+                <span className="archiving__rise-inner" data-rise="materials">
+                  {m}
+                </span>
+              </span>
             </li>
           ))}
         </ul>
@@ -678,7 +683,11 @@ export function Archiving() {
         <ul className="archiving__list" style={at(-1, 4337)}>
           {COLORS.map((c) => (
             <li key={c} className="archiving__list-item archiving__list-item--color">
-              {c}
+              <span className="archiving__rise archiving__rise--line">
+                <span className="archiving__rise-inner" data-rise="colors">
+                  {c}
+                </span>
+              </span>
             </li>
           ))}
         </ul>

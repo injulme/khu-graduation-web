@@ -781,6 +781,11 @@ body:has(.archiving) * {
   display: inline-block;
 }
 
+/* 목록 한 줄: 줄 높이(70px) 박스 */
+.archiving__rise--line {
+  display: block;
+}
+
 .archiving__heading--dim {
   color: #b8b8b8;
 }
