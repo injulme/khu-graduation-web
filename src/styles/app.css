@@ -741,6 +741,21 @@
   color: #b9b9b9;
 }
 
+/* COLLECT · TRACE · REVEAL: hover 하면 검정이 가운데부터 원형으로 퍼진다 */
+/* inline-block 이어야 겹친 검정 글자가 줄 높이 기준으로 회색 글자와 정확히 겹친다 (inline 이면 1px 위로 뜬다) */
+.archiving__ink-word {
+  position: relative;
+  display: inline-block;
+}
+
+.archiving__ink {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #000000;
+  pointer-events: none;
+}
+
 .archiving__heading--dim {
   color: #b8b8b8;
 }

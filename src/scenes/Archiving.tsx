@@ -305,6 +305,26 @@ function useScramble(refs: RefObject<HTMLElement | null>[]) {
   }, [refs])
 }
 
+const INK_DURATION = 0.5 // 검정이 퍼지는 시간(초)
+// 원 반지름 71% 면 단어 박스 모서리까지 덮는다 (clip-path circle 의 % 기준은 대각선/√2)
+const INK_FULL = 'circle(71% at 50% 50%)'
+const INK_NONE = 'circle(0% at 50% 50%)'
+
+// 회색 단어 위에 같은 단어를 검정으로 겹쳐 두고, hover 하면 가운데부터 원형으로 드러낸다
+function InkWord({ children }: { children: string }) {
+  const inkRef = useRef<HTMLSpanElement>(null)
+  const ink = (clipPath: string) =>
+    gsap.to(inkRef.current, { clipPath, duration: INK_DURATION, ease: 'power2.out', overwrite: true })
+  return (
+    <span className="archiving__ink-word" onMouseEnter={() => ink(INK_FULL)} onMouseLeave={() => ink(INK_NONE)}>
+      {children}
+      <span ref={inkRef} className="archiving__ink" aria-hidden="true" style={{ clipPath: INK_NONE }}>
+        {children}
+      </span>
+    </span>
+  )
+}
+
 export function Archiving() {
   const ref = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -363,8 +383,8 @@ export function Archiving() {
         </span>
 
         {/* 소개 */}
-        <h2 className="archiving__heading archiving__heading--intro">
-          COLLECT <span className="archiving__dim">· TRACE · REVEAL</span>
+        <h2 className="archiving__heading archiving__heading--intro archiving__dim">
+          <InkWord>COLLECT</InkWord> · <InkWord>TRACE</InkWord> · <InkWord>REVEAL</InkWord>
         </h2>
         <p className="archiving__intro">
           {`Since April, we have traveled across the country, photographing discarded objects and collecting the colors found within them. What we discovered was a landscape far more colorful than expected.
