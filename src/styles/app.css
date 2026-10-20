@@ -612,6 +612,12 @@
 
 .cursor.is-visible { opacity: 1; }
 
+/* archiving 화면에서는 헤더 메뉴를 포함해 마우스 커서를 항상 기본 화살표로 둔다 */
+body:has(.archiving),
+body:has(.archiving) * {
+  cursor: default !important;
+}
+
 .archiving {
   position: relative;
   width: 1920px;
