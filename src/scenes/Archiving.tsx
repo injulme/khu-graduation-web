@@ -397,6 +397,49 @@ function useTrayPin(ref: RefObject<HTMLElement | null>) {
   }, [ref])
 }
 
+// 질문 두 줄: 스크롤하면 회색 → 검정 → 회색. 위치는 줄 윗부분이 화면 위에서 몇 % 지점에 있는지 기준
+const LINE_GRAY = '#b8b8b8'
+const LINE_BLACK = '#000000'
+// 줄마다 [검정으로 바뀌는 구간, 다시 회색으로 바뀌는 구간]. 회색 구간은 검정 구간 뒤여야 한다
+type LineRange = { toBlack: [string, string]; toGray: [string, string] }
+const LINES: Record<string, LineRange> = {
+  question: { toBlack: ['top 35%', 'top 25%'], toGray: ['top 25%', 'top 15%'] },
+  // 첫 줄보다 108px 아래라 같은 % 면 첫 줄이 검정이 된 뒤에 시작한다
+  explore: { toBlack: ['top 35%', 'top 25%'], toGray: ['top 25%', 'top 15%'] },
+}
+
+function useLineHighlight(ref: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root) return
+    const ctx = gsap.context(() => {
+      root.querySelectorAll<HTMLElement>('[data-line-highlight]').forEach((el) => {
+        const range = LINES[el.dataset.lineHighlight ?? '']
+        if (!range) return
+        gsap.set(el, { color: LINE_GRAY })
+        const [blackStart, blackEnd] = range.toBlack
+        const [grayStart, grayEnd] = range.toGray
+        gsap.to(el, {
+          color: LINE_BLACK,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: blackStart, end: blackEnd, scrub: true },
+        })
+        gsap.fromTo(
+          el,
+          { color: LINE_BLACK },
+          {
+            color: LINE_GRAY,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: { trigger: el, start: grayStart, end: grayEnd, scrub: true },
+          },
+        )
+      })
+    }, root)
+    return () => ctx.revert()
+  }, [ref])
+}
+
 const INK_DURATION = 0.5 // 검정이 퍼지는 시간(초)
 // 원 반지름 71% 면 단어 박스 모서리까지 덮는다 (clip-path circle 의 % 기준은 대각선/√2)
 const INK_FULL = 'circle(71% at 50% 50%)'
@@ -431,6 +474,7 @@ export function Archiving() {
   const introRefs = useMemo(() => [introRef, introKoRef], [])
   useScramble(introRefs, true)
   useTrayPin(ref)
+  useLineHighlight(ref)
 
   return (
     <main ref={ref} className="archiving">
@@ -505,10 +549,10 @@ export function Archiving() {
         <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 1662), width: 336.5 }} />
 
         {/* 질문과 분류 선택 */}
-        <h2 className="archiving__heading" style={at(287, 2384)}>
+        <h2 className="archiving__heading" style={at(287, 2384)} data-line-highlight="question">
           WHERE DID THIS COLOR COME FROM?
         </h2>
-        <h2 className="archiving__heading archiving__heading--dim" style={at(461, 2492)}>
+        <h2 className="archiving__heading archiving__heading--dim" style={at(461, 2492)} data-line-highlight="explore">
           Explore the traces we found.
         </h2>
         <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 2704), width: 336.5 }} />
