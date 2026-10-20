@@ -4,6 +4,8 @@ import { objectSrc, photoSrc, WASTE_PHOTOS, type WasteObject } from '../lib/wast
 
 const base = import.meta.env.BASE_URL
 const calloutSrc = (name: string) => `${base}archiving/${name}.svg`
+// 로컬에 없어서 피그마에서 내보낸 이미지
+const figmaSrc = (name: string) => `${base}archiving/${name}.webp`
 
 type Item = {
   name: WasteObject
@@ -76,8 +78,9 @@ const RINGS = [
 const MATERIALS = ['Paper', 'Glass', 'Metal', 'Plastic', 'Plastic Film', 'Other']
 const COLORS = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Brown', 'Black', 'White']
 
-// 사진 그리드: 피그마 블록 → 줄 → 칸 순서. null 은 피그마 레이어명으로 파일을 특정할 수 없어 비워둔 칸
-type Cell = string | null
+// 사진 그리드: 피그마 블록 → 줄 → 칸 순서.
+// 문자열은 waste 사진 이름, 숫자는 피그마 레이어명으로 파일을 특정할 수 없어 피그마에서 내보낸 칸(Mask group 노드 id 140:xxxx)
+type Cell = string | number
 // tight: 이미지-라벨 간격 20px, fixed: 줄 높이 409px 고정 (피그마 값, 나머지 줄은 28px / 413px)
 type Block = { rows: Cell[][]; pad?: boolean; tight?: number[]; fixed?: number[] }
 
@@ -85,10 +88,10 @@ const GRID: Block[] = [
   {
     rows: [
       ['Red-15', 'Purple-07', 'Purple-08', 'Red-21'],
-      ['Red-10', 'Red-20', 'Red-18', null],
+      ['Red-10', 'Red-20', 'Red-18', 2183],
       ['Red-09', 'Red-11', 'Red-13', 'Red-14'],
-      [null, null, null, 'Red-02'],
-      [null, 'Red-16', 'Red-19', null],
+      [2202, 2207, 2212, 'Red-02'],
+      [2221, 'Red-16', 'Red-19', 2232],
     ],
     tight: [1],
   },
@@ -114,33 +117,35 @@ const GRID: Block[] = [
   },
   {
     rows: [
-      ['Blue-07', null, 'Orange-02', null],
+      ['Blue-07', 2365, 'Orange-02', 2373],
       ['Blue-11', 'Blue-10', 'Blue-04', 'Blue-08'],
-      ['Blue-09', 'Blue-12', null, 'Blue-06'],
+      ['Blue-09', 'Blue-12', 2398, 'Blue-06'],
     ],
   },
   // 피그마에서 이 블록만 padding 10px 이 들어가 있다
-  { rows: [['Blue-13', 'Purple-09', 'Blue-05', null]], pad: true },
+  { rows: [['Blue-13', 'Purple-09', 'Blue-05', 2417]], pad: true },
   {
     rows: [
-      ['Orange-21', 'Orange-09', null, 'Brown-01'],
-      ['Red-17', 'Red-01', 'Orange-07', null],
+      ['Orange-21', 'Orange-09', 2430, 'Brown-01'],
+      ['Red-17', 'Red-01', 'Orange-07', 2448],
     ],
   },
-  { rows: [['Black-05', null, null, null]], fixed: [0] },
+  { rows: [['Black-05', 2457, 2462, 2467]], fixed: [0] },
   {
     rows: [
       ['White-03', 'Red-12', 'White-05', 'White-04'],
       ['Black-06', 'Black-07', 'Yellow-01', 'Black-01'],
-      [null, 'White-02', null, null],
+      [2500, 'White-02', 2508, 2513],
     ],
     fixed: [0],
   },
 ]
 
 const NO = new Map(WASTE_PHOTOS.map((p) => [p.name, p.no]))
-// 피그마 표기 그대로 '( No.001)' — 닫는 괄호 앞에 공백 없음. 비운 칸은 피그마 값(001) 유지
-const cellLabel = (name: Cell) => `( No.${String((name && NO.get(name)) ?? 1).padStart(3, '0')})`
+// 피그마 표기 그대로 '( No.001)' — 닫는 괄호 앞에 공백 없음. 번호를 모르는 피그마 내보내기 칸은 피그마 값(001) 유지
+const cellLabel = (cell: Cell) =>
+  `( No.${String((typeof cell === 'string' && NO.get(cell)) || 1).padStart(3, '0')})`
+const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : figmaSrc(`grid-${cell}`))
 
 const at = (x: number, y: number): CSSProperties => ({ left: x, top: y })
 
@@ -167,7 +172,6 @@ export function Archiving() {
             style={itemStyle(item)}
           />
         ))}
-        {/* 담배갑(피그마 image 6346066)은 로컬 파일이 없어 비워둠: 647, 419 / 429.51×449.11 */}
         {CALLOUTS.map((c) => (
           <img key={c.name} className="archiving__callout" src={calloutSrc(c.name)} alt="" style={at(c.x, c.y)} />
         ))}
@@ -179,6 +183,8 @@ export function Archiving() {
             {l.text}
           </p>
         ))}
+        {/* 담배갑(피그마에서 지시선·라벨보다 위 레이어): 피그마 Mask group 140:2525 내보내기. 마스크로 잘린 실제 보이는 영역 크기라 위치는 피그마 렌더와 맞춰 측정 */}
+        <img className="archiving__figma" src={figmaSrc('cigarette')} alt="" style={{ ...at(714, 462), width: 290 }} />
         <span className="archiving__arrow" aria-hidden="true">
           ↓
         </span>
@@ -198,7 +204,8 @@ So, can we really call this colorful world beautiful?`}
         <p className="archiving__intro-ko">
           버려진 풍경 속 색을 수집하며, 우리가 자연스럽다고 믿어온 환경을 다시 바라봅니다.
         </p>
-        {/* 커피컵(피그마 image 6346080)은 로컬 cup-coffee 와 기울기가 달라 비워둠: 131, 1662 / 336.5×344.8 */}
+        {/* 커피컵: 로컬 cup-coffee 와 기울기가 달라 피그마 140:2529 내보내기 사용 */}
+        <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 1662), width: 336.5 }} />
 
         {/* 질문과 분류 선택 */}
         <h2 className="archiving__heading" style={at(287, 2384)}>
@@ -207,7 +214,7 @@ So, can we really call this colorful world beautiful?`}
         <h2 className="archiving__heading archiving__heading--dim" style={at(461, 2492)}>
           Explore the traces we found.
         </h2>
-        {/* 커피컵(피그마 image 6346082) 비워둠: 131, 2704 / 336.5×344.8 */}
+        <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 2704), width: 336.5 }} />
         <span className="archiving__paren archiving__paren--sm" style={at(375, 2719)}>(</span>
         <span className="archiving__heading" style={at(507, 2732)}>Waste</span>
         <span className="archiving__heading" style={at(533, 2837)}>Type</span>
@@ -219,8 +226,8 @@ So, can we really call this colorful world beautiful?`}
 
         {/* Waste Type */}
         <span className="archiving__paren" style={at(163, 3571)}>(</span>
-        {/* 캔 더미 사진(피그마 image 6345964)은 레이어명이 로컬 파일과 맞지 않아 비워둠 */}
-        <div className="archiving__photo archiving__photo--empty" style={at(329, 3505)} />
+        {/* 캔 더미 사진: 레이어명이 로컬 파일과 맞지 않아 피그마 140:2152 내보내기 사용 */}
+        <img className="archiving__photo" src={figmaSrc('cans')} alt="" style={at(329, 3505)} />
         <span className="archiving__paren" style={at(799, 3571)}>)</span>
         <ul className="archiving__list" style={at(1109, 3451)}>
           {MATERIALS.map((m) => (
@@ -259,14 +266,10 @@ So, can we really call this colorful world beautiful?`}
                   .filter(Boolean)
                   .join(' ')}
               >
-                {row.map((name, k) => (
+                {row.map((cell, k) => (
                   <figure key={k} className="archiving__cell">
-                    {name ? (
-                      <img className="archiving__cell-img" src={photoSrc(name)} alt="" loading="lazy" />
-                    ) : (
-                      <div className="archiving__cell-img archiving__cell-img--empty" />
-                    )}
-                    <figcaption className="archiving__cell-label">{cellLabel(name)}</figcaption>
+                    <img className="archiving__cell-img" src={cellSrc(cell)} alt="" loading="lazy" />
+                    <figcaption className="archiving__cell-label">{cellLabel(cell)}</figcaption>
                   </figure>
                 ))}
               </div>
