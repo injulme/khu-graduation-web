@@ -59,6 +59,9 @@ export function Archiving() {
           style={itemStyle(item)}
         />
       ))}
+      <span className="archiving__arrow" aria-hidden="true">
+        ↓
+      </span>
     </main>
   )
 }
