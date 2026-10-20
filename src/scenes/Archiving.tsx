@@ -354,44 +354,54 @@ function useScramble(refs: RefObject<HTMLElement | null>[], onView = false) {
   }, [refs, onView])
 }
 
-// 고정되는 화면 위치(1920 기준 px). 트레이 윗부분이 화면 맨 위에서 86px 아래에 닿으면 고정 시작
-const TRAY_PIN_TOP = 86
-const TRAY_FLOAT = 16 // 둥실둥실 뜨는 폭: 제자리 기준 위아래(px)
-const TRAY_FLOAT_DURATION = 1 // 위에서 아래까지 걸리는 시간(초). 왕복은 2배
+// 고정되는 화면 위치(1920 기준 px). 이미지 윗부분이 화면 맨 위에서 86px 아래에 닿으면 고정 시작
+// (data-pin-anchor="bottom" 이면 아랫부분이 화면 맨 아래에서 86px 위에 닿으면)
+const PIN_TOP = 86
+const FLOAT = 16 // 둥실둥실 뜨는 폭: 제자리 기준 위아래(px)
+const FLOAT_DURATION = 1 // 위에서 아래까지 걸리는 시간(초). 왕복은 2배
 
-// 트레이: 화면 위쪽에 닿으면 그 자리에 고정된 채로 내려가다가, 두 번째 배치 위치에 닿으면 내려놓인다.
-// 실제로 움직이는 건 첫 번째 트레이 하나이고, 두 번째 트레이는 도착 지점 표시로만 쓴다
-function useTrayPin(ref: RefObject<HTMLElement | null>) {
+// 트레이·커피컵: 화면 위쪽에 닿으면 그 자리에 고정된 채로 내려가다가, 두 번째 배치 위치에 닿으면 내려놓인다.
+// data-pin-start / data-pin-end 값이 같은 이미지끼리 짝이다. 실제로 움직이는 건 출발 이미지이고, 도착 이미지는 위치 표시로만 쓴다.
+// 내내 위아래로 둥실둥실 뜬다
+function usePinFloat(ref: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
     const root = ref.current
-    const from = root?.querySelector<HTMLElement>('[data-pin="start"]')
-    const to = root?.querySelector<HTMLElement>('[data-pin="end"]')
-    if (!root || !from || !to) return
+    if (!root) return
     // 1920 기준 px 를 화면 축소(zoom) 배율에 맞춘다
-    const pinAt = () => TRAY_PIN_TOP * (parseFloat(getComputedStyle(root).zoom) || 1)
+    const pinAt = () => PIN_TOP * (parseFloat(getComputedStyle(root).zoom) || 1)
     const ctx = gsap.context(() => {
-      gsap.to(from, {
-        // 두 트레이는 크기·회전이 같아서 top 만 옮기면 도착 위치와 정확히 겹친다
-        top: to.style.top,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: from,
-          start: () => `top ${pinAt()}px`,
-          endTrigger: to,
-          // 도착도 같은 기준이어야 내려놓이는 위치가 정확히 겹친다
-          end: () => `top ${pinAt()}px`,
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
+      root.querySelectorAll<HTMLElement>('[data-pin-start]').forEach((from) => {
+        const to = root.querySelector<HTMLElement>(`[data-pin-end="${from.dataset.pinStart}"]`)
+        if (!to) return
+        // 기본은 이미지 윗부분이 화면 위에서 PIN_TOP 만큼 아래, bottom 이면 이미지 아랫부분이 화면 아래에서 PIN_TOP 만큼 위
+        // 화면에 보이는 높이를 재서 윗부분 기준으로 바꿔 쓴다. 이미지 로드 전에 재도 맞도록 이미지 높이는 style 에 지정해 둔다
+        const at = () =>
+          from.dataset.pinAnchor === 'bottom'
+            ? `top ${innerHeight - pinAt() - from.getBoundingClientRect().height}px`
+            : `top ${pinAt()}px`
+        gsap.to(from, {
+          // 출발·도착 이미지는 크기·회전이 같아서 top 만 옮기면 도착 위치와 정확히 겹친다
+          top: to.style.top,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: from,
+            start: at,
+            endTrigger: to,
+            // 도착도 같은 기준이어야 내려놓이는 위치가 정확히 겹친다
+            end: at,
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        })
+        // 둥실둥실: 고정 애니메이션(top)·회전(transform)과 겹치지 않게 translate 로 따로 움직인다
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          gsap.fromTo(
+            from,
+            { '--float': `${-FLOAT}px` },
+            { '--float': `${FLOAT}px`, duration: FLOAT_DURATION, ease: 'sine.inOut', repeat: -1, yoyo: true },
+          )
+        }
       })
-      // 둥실둥실: 고정 애니메이션(top)·회전(transform)과 겹치지 않게 translate 로 따로 움직인다
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        gsap.fromTo(
-          from,
-          { '--float': `${-TRAY_FLOAT}px` },
-          { '--float': `${TRAY_FLOAT}px`, duration: TRAY_FLOAT_DURATION, ease: 'sine.inOut', repeat: -1, yoyo: true },
-        )
-      }
     }, root)
     return () => ctx.revert()
   }, [ref])
@@ -473,7 +483,7 @@ export function Archiving() {
   const introKoRef = useRef<HTMLParagraphElement>(null)
   const introRefs = useMemo(() => [introRef, introKoRef], [])
   useScramble(introRefs, true)
-  useTrayPin(ref)
+  usePinFloat(ref)
   useLineHighlight(ref)
 
   return (
@@ -504,7 +514,8 @@ export function Archiving() {
             src={objectSrc(item.name)}
             alt=""
             style={itemStyle(item)}
-            data-pin={item.pin}
+            data-pin-start={item.pin === 'start' ? item.name : undefined}
+            data-pin-end={item.pin === 'end' ? item.name : undefined}
           />
         ))}
         {CALLOUTS.map((c) => (
@@ -546,7 +557,15 @@ export function Archiving() {
           {splitWords(INTRO_KO, 'archiving__type-char')}
         </p>
         {/* 커피컵: 로컬 cup-coffee 와 기울기가 달라 피그마 140:2529 내보내기 사용 */}
-        <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 1662), width: 336.5 }} />
+        <img
+          className="archiving__figma"
+          src={figmaSrc('cup-coffee-tilt')}
+          alt=""
+          style={{ ...at(131, 1662), width: 336.5, height: 344.8 }}
+          data-pin-start="cup-coffee"
+          // 컵은 아랫부분 기준으로 고정
+          data-pin-anchor="bottom"
+        />
 
         {/* 질문과 분류 선택 */}
         <h2 className="archiving__heading" style={at(287, 2384)} data-line-highlight="question">
@@ -555,7 +574,13 @@ export function Archiving() {
         <h2 className="archiving__heading archiving__heading--dim" style={at(461, 2492)} data-line-highlight="explore">
           Explore the traces we found.
         </h2>
-        <img className="archiving__figma" src={figmaSrc('cup-coffee-tilt')} alt="" style={{ ...at(131, 2704), width: 336.5 }} />
+        <img
+          className="archiving__figma"
+          src={figmaSrc('cup-coffee-tilt')}
+          alt=""
+          style={{ ...at(131, 2704), width: 336.5, height: 344.8 }}
+          data-pin-end="cup-coffee"
+        />
         <span className="archiving__paren archiving__paren--sm" style={at(375, 2719)}>(</span>
         <span className="archiving__heading" style={at(507, 2732)}>Waste</span>
         <span className="archiving__heading" style={at(533, 2837)}>Type</span>
