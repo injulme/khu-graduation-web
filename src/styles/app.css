@@ -614,8 +614,16 @@
 
 .archiving {
   position: relative;
+  width: 1920px;
   min-height: 100svh;
+  overflow-x: clip;
   background: var(--bg);
+}
+
+/* 그리드 위쪽은 피그마 좌표 그대로 절대 배치한다 (그리드 시작 y = 5939) */
+.archiving__canvas {
+  position: relative;
+  height: 5939px;
 }
 
 .archiving__title {
@@ -627,7 +635,7 @@
   font-family: 'NT Epika', serif;
   font-size: 100px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.18;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
@@ -638,6 +646,7 @@
   width: 336px;
   height: 0;
   border-top: 3px solid #000000;
+  transform: translateY(-1.5px);
 }
 
 .archiving__rule--left {
@@ -666,14 +675,13 @@
 }
 
 .archiving__sub--right {
-  right: 80px;
+  left: 1524px;
+  width: 316px;
   text-align: right;
 }
 
 .archiving__label {
   position: absolute;
-  top: 394.95px;
-  left: 748.13px;
   margin: 0;
   color: #000000;
   font-family: 'Montserrat', sans-serif;
@@ -691,6 +699,12 @@
   pointer-events: none;
 }
 
+.archiving__callout {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+}
+
 .archiving__arrow {
   position: absolute;
   top: 988px;
@@ -701,4 +715,205 @@
   font-weight: 400;
   line-height: 140%;
   letter-spacing: 0;
+}
+
+/* Montserrat Bold 70 — 피그마 줄 높이 Auto(85px) */
+.archiving__heading {
+  position: absolute;
+  margin: 0;
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 70px;
+  font-weight: 700;
+  line-height: 85px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.archiving__heading--intro {
+  top: 1327px;
+  left: 493px;
+  width: 933px;
+  text-align: center;
+}
+
+.archiving__dim {
+  color: #b9b9b9;
+}
+
+.archiving__heading--dim {
+  color: #b8b8b8;
+}
+
+.archiving__intro {
+  position: absolute;
+  top: 1491px;
+  left: 293px;
+  width: 1334px;
+  margin: 0;
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 140%;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.archiving__intro-ko {
+  position: absolute;
+  top: 1768px;
+  left: 548px;
+  width: 823px;
+  margin: 0;
+  color: #000000;
+  font-family: 'GamtanRoad Dotum', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.01em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Montserrat SemiBold 괄호 — 피그마 줄 높이 Auto */
+.archiving__paren {
+  position: absolute;
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 203.11px;
+  font-weight: 600;
+  line-height: 248px;
+}
+
+.archiving__paren--sm {
+  font-size: 177.55px;
+  line-height: 216px;
+}
+
+.archiving__photo {
+  position: absolute;
+  width: 375px;
+  height: 375px;
+  object-fit: cover;
+}
+
+.archiving__photo--empty {
+  background: #d9d9d9;
+}
+
+/* 줄 간격 110px: 글자(70px) + 아래 20px 에 1px 선 */
+.archiving__list {
+  position: absolute;
+  width: 811px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.archiving__list-item {
+  position: relative;
+  height: 110px;
+  color: #030303;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 50px;
+  font-weight: 400;
+  line-height: 70px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.archiving__list-item::after {
+  content: '';
+  position: absolute;
+  top: 89.5px;
+  left: 0;
+  width: 100%;
+  border-top: 1px solid #000000;
+}
+
+.archiving__list-item:first-child {
+  color: #000000;
+}
+
+.archiving__list-item--material {
+  padding-left: 37px;
+}
+
+.archiving__list-item--color {
+  padding-left: 594px;
+}
+
+.archiving__similar {
+  position: absolute;
+  top: 5031px;
+  left: 1301px;
+  margin: 0;
+  color: #030303;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 100px;
+  font-weight: 700;
+  line-height: 122px;
+  white-space: nowrap;
+}
+
+/* 사진 그리드 — 피그마 오토레이아웃 그대로 */
+.archiving__grid {
+  display: flex;
+  width: 1940px;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.archiving__block {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.archiving__block--pad {
+  padding: 10px;
+  gap: 10px;
+}
+
+.archiving__row {
+  display: flex;
+  align-items: center;
+}
+
+.archiving__cell {
+  display: flex;
+  width: 480px;
+  flex-direction: column;
+  gap: 28px;
+  margin: 0;
+}
+
+.archiving__cell-img {
+  display: block;
+  width: 480px;
+  height: 350px;
+  object-fit: cover;
+}
+
+.archiving__cell-img--empty {
+  background: #d9d9d9;
+}
+
+.archiving__cell-label {
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 140%;
+  text-align: center;
+}
+
+.archiving__row--tight .archiving__cell {
+  gap: 20px;
+}
+
+/* 칸 내용(413px)이 줄 높이(409px)를 넘쳐도 피그마처럼 잘리지 않고 가운데 정렬된다 */
+.archiving__row--fixed {
+  height: 409px;
 }
