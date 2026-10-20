@@ -912,6 +912,9 @@ body:has(.archiving) * {
 .archiving__material-img {
   --jump-duration: 0.6s;
   --jump-ease: cubic-bezier(0.34, 1.8, 0.64, 1); /* 1 을 넘는 값이 바닥 위로 솟는 정도 */
+  --jump-delay: 0.2s; /* 배경이 차오르기 시작한 뒤 사진이 뛰어오르기까지 (벗어날 때는 바로 떨어진다) */
+  --fall-duration: 0.3s; /* 벗어날 때 선 밑으로 떨어지는 시간 */
+  --fall-ease: cubic-bezier(0.6, 0, 0.9, 0.4); /* 처음엔 천천히, 갈수록 빨라진다 */
   position: absolute;
   pointer-events: none;
   clip-path: inset(-1000px -1000px 0 -1000px);
@@ -921,12 +924,12 @@ body:has(.archiving) * {
   display: block;
   max-width: none;
   transform: translateY(var(--drop));
-  transition: transform var(--fill-duration) cubic-bezier(0.4, 0, 1, 1);
+  transition: transform var(--fall-duration) var(--fall-ease);
 }
 
 .archiving__list-item--material:hover .archiving__material-img img {
   transform: none;
-  transition: transform var(--jump-duration) var(--jump-ease);
+  transition: transform var(--jump-duration) var(--jump-ease) var(--jump-delay);
 }
 
 /* 사진이 다른 줄의 구분선 위로 오도록 hover 한 줄을 앞으로. 벗어날 때는 사진이 다 내려간 뒤에 뒤로 보낸다 */
