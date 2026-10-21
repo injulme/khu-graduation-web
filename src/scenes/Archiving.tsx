@@ -1,4 +1,5 @@
-import { Fragment, useLayoutEffect, useMemo, useRef, type CSSProperties, type RefObject } from 'react'
+import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react'
+import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -597,6 +598,217 @@ function InkWord({ children }: { children: string }) {
   )
 }
 
+// 그리드 사진 클릭: 화면 가운데 확대(피그마 140:3005) → 잠시 뒤 상세 화면(피그마 140:3093)으로 이어진다
+// 확대: 1920 기준 화면 가운데 1332×971.25, 번호는 사진 윗부분에서 180px 아래
+const ZOOM_W = 1332
+const ZOOM_H = 971.25
+const ZOOM_LABEL_TOP = 180.23
+const ZOOM_DURATION = 0.6 // 커지고 줄어드는 시간(초)
+const ZOOM_EASE = 'power3.inOut'
+const ZOOM_LABEL_FADE = 0.3 // 번호가 나타나고 사라지는 시간(초)
+const ZOOM_HOLD = 0.6 // 확대가 끝난 뒤 상세 화면으로 넘어가기까지 머무는 시간(초)
+// 상세: 사진이 왼쪽 절반을 채우고 오른쪽 절반에 사진 색 패널이 들어온다
+const DETAIL_DURATION = 0.8
+const DETAIL_EASE = 'power3.inOut'
+const DETAIL_SWAP = 0.4 // 이전/다음 사진으로 바뀔 때 나타나는 시간(초)
+
+// 상세 화면 사진별 내용. 피그마에 있는 No.015 만 채워 뒀다. 없는 사진은 번호와 작은 사진만 나온다
+// hex 를 비우면 패널 색은 사진 색 이름의 COLOR_FILL 을 쓴다
+type CellDetail = { name?: string; period?: string; hex?: string; text?: string; type?: string }
+const CELL_DETAILS: Partial<Record<string, CellDetail>> = {
+  'Red-15': {
+    name: 'NETTED SHELLS',
+    period: 'DECADES — CENTURIES',
+    hex: '8B0113',
+    text: '낡은 배관 아래에 매달린 붉은 망 속에서 발견한 색. 버려진 것과 자연의 흔적이 뒤섞인 채, \n어느새 익숙한 풍경의 일부로 남아 있다.',
+    type: 'Other',
+  },
+}
+
+// 그리드 순서대로 모든 칸. key 는 블록-줄-칸 번호
+const GRID_CELLS = GRID.flatMap((block, i) =>
+  block.rows.flatMap((row, j) => row.map((cell, k) => ({ key: `${i}-${j}-${k}`, cell }))),
+)
+const CELL_BY_KEY = new Map(GRID_CELLS.map((c) => [c.key, c.cell]))
+const COLOR_OF = new Map(WASTE_PHOTOS.map((p) => [p.name, p.color]))
+const cellNo = (cell: Cell) => String((typeof cell === 'string' && NO.get(cell)) || 1).padStart(3, '0')
+const detailOf = (cell: Cell) => (typeof cell === 'string' ? CELL_DETAILS[cell] : undefined) ?? {}
+const panelColor = (cell: Cell) => {
+  const hex = detailOf(cell).hex
+  if (hex) return `#${hex}`
+  const color = typeof cell === 'string' ? COLOR_OF.get(cell) : undefined
+  return (color && COLOR_FILL[color]) || '#000000'
+}
+const cellEl = (key: string) => document.querySelector<HTMLImageElement>(`[data-cell-key="${key}"]`)
+
+const rectOf = (el: Element) => {
+  const r = el.getBoundingClientRect()
+  return { left: r.left, top: r.top, width: r.width, height: r.height }
+}
+
+// 화면 축소(zoom) 영향을 받지 않도록 body 에 띄운다. 크기는 1920 기준 px 에 축소 배율(--z)을 곱해 화면 px 로 쓴다
+// hover 로 커진 사진 자리에서 그대로 이어 커지고, 닫으면(확대 중 아무 곳 클릭, ✕, Esc) 지금 보고 있는 사진의 칸 자리로 줄어든다
+function CellZoom({
+  cellKey,
+  onNavigate,
+  onClosed,
+}: {
+  cellKey: string
+  onNavigate: (key: string) => void
+  onClosed: () => void
+}) {
+  const [openKey] = useState(cellKey)
+  const [phase, setPhase] = useState<'zoom' | 'detail'>('zoom')
+  const rootRef = useRef<HTMLDivElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
+  const labelRef = useRef<HTMLParagraphElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const detailRef = useRef<HTMLDivElement>(null)
+  const tlRef = useRef<gsap.core.Timeline | null>(null)
+  const closeRef = useRef(() => {})
+  const swapped = useRef(false)
+  const cell = CELL_BY_KEY.get(cellKey) ?? ''
+  const detail = detailOf(cell)
+  const panel = panelColor(cell)
+
+  // 열기: 칸 → 화면 가운데 확대 → 잠시 머문 뒤 상세 화면
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    const img = imgRef.current
+    const label = labelRef.current
+    const from = cellEl(openKey)
+    if (!root || !from) return
+    const z = parseFloat(getComputedStyle(from.closest('.archiving') ?? from).zoom) || 1
+    root.style.setProperty('--z', String(z))
+    const width = ZOOM_W * z
+    const height = ZOOM_H * z
+    const to = { left: (innerWidth - width) / 2, top: (innerHeight - height) / 2, width, height }
+
+    // 칸은 이 렌더에서 숨겨졌지만 hover 확대가 풀리기 전이라 커진 자리 그대로 잰다
+    const tl = gsap.timeline()
+    tl.fromTo(img, rectOf(from), { ...to, duration: ZOOM_DURATION, ease: ZOOM_EASE })
+    tl.fromTo(
+      label,
+      { opacity: 0, top: to.top + ZOOM_LABEL_TOP * z },
+      { opacity: 1, duration: ZOOM_LABEL_FADE },
+      ZOOM_DURATION * 0.7,
+    )
+    tl.call(() => setPhase('detail'), [], `+=${ZOOM_HOLD}`)
+    tlRef.current = tl
+
+    // 열려 있는 동안 스크롤을 막는다 (overflow 를 바꾸면 스크롤바 폭만큼 화면 배율이 바뀌어서 이벤트로 막는다)
+    const keys = new Set([' ', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown'])
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeRef.current()
+      else if (keys.has(e.key)) e.preventDefault()
+    }
+    const block = (e: Event) => e.preventDefault()
+    addEventListener('keydown', onKey)
+    addEventListener('wheel', block, { passive: false })
+    return () => {
+      tl.kill()
+      gsap.killTweensOf([img, label])
+      removeEventListener('keydown', onKey)
+      removeEventListener('wheel', block)
+    }
+  }, [openKey])
+
+  // 상세: 사진은 왼쪽 절반을 채우고, 패널은 오른쪽에서 들어온 뒤 내용이 차례로 나타난다
+  useLayoutEffect(() => {
+    if (phase !== 'detail') return
+    const img = imgRef.current
+    const panelEl = panelRef.current
+    const detailEl = detailRef.current
+    gsap.to(labelRef.current, { opacity: 0, duration: ZOOM_LABEL_FADE, overwrite: true })
+    gsap.to(img, { left: 0, top: 0, width: innerWidth / 2, height: innerHeight, duration: DETAIL_DURATION, ease: DETAIL_EASE })
+    gsap.fromTo(panelEl, { xPercent: 100 }, { xPercent: 0, duration: DETAIL_DURATION, ease: DETAIL_EASE })
+    if (detailEl)
+      gsap.fromTo(
+        detailEl.children,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.05, delay: DETAIL_DURATION * 0.6 },
+      )
+  }, [phase])
+
+  // 이전/다음: 사진과 내용을 바꾼 뒤 서서히 나타낸다 (처음 열 때는 건너뛴다)
+  useLayoutEffect(() => {
+    if (!swapped.current) {
+      swapped.current = true
+      return
+    }
+    const detailEl = detailRef.current
+    gsap.fromTo([imgRef.current, detailEl], { opacity: 0 }, { opacity: 1, duration: DETAIL_SWAP, ease: 'power1.out' })
+  }, [cellKey])
+
+  // 닫기: 지금 보고 있는 사진의 칸으로 줄어든다. 칸이 화면 밖이면 먼저 칸이 보이게 스크롤한다
+  useLayoutEffect(() => {
+    let closing = false
+    closeRef.current = () => {
+      const to = cellEl(cellKey)
+      if (closing || !to) return
+      closing = true
+      tlRef.current?.kill()
+      const r = to.getBoundingClientRect()
+      if (r.bottom < 0 || r.top > innerHeight) scrollBy(0, r.top - (innerHeight - r.height) / 2)
+      gsap.to([labelRef.current, detailRef.current], { opacity: 0, duration: ZOOM_LABEL_FADE, overwrite: true })
+      gsap.to(panelRef.current, { xPercent: 100, duration: ZOOM_DURATION, ease: ZOOM_EASE })
+      gsap.to(imgRef.current, { ...rectOf(to), duration: ZOOM_DURATION, ease: ZOOM_EASE, overwrite: true, onComplete: onClosed })
+    }
+  })
+
+  const step = (d: number) => {
+    const i = GRID_CELLS.findIndex((c) => c.key === cellKey)
+    onNavigate(GRID_CELLS[(i + d + GRID_CELLS.length) % GRID_CELLS.length].key)
+  }
+  const ink = inkOn(panel)
+
+  return createPortal(
+    <div
+      ref={rootRef}
+      className={`archiving-zoom${phase === 'detail' ? ' archiving-zoom--detail' : ''}`}
+      onClick={() => phase === 'zoom' && closeRef.current()}
+    >
+      <img ref={imgRef} className="archiving-zoom__img" src={cellSrc(cell)} alt="" />
+      <p ref={labelRef} className="archiving-zoom__label">
+        {cellLabel(cell)}
+      </p>
+      {phase === 'detail' && (
+        <>
+          <div ref={panelRef} className="archiving-detail__panel" style={{ background: panel }} />
+          {/* 1920×1080 피그마 좌표 그대로 두고 화면 배율만큼 줄여 세로 가운데에 둔다 */}
+          <div
+            ref={detailRef}
+            className="archiving-detail"
+            style={{ color: ink }}
+          >
+            {detail.name && <p className="archiving-detail__name">{detail.name}</p>}
+            <p className="archiving-detail__no">(No.{cellNo(cell)})</p>
+            {detail.period && <p className="archiving-detail__period">{detail.period}</p>}
+            <img className="archiving-detail__thumb" src={cellSrc(cell)} alt="" />
+            {detail.hex && <p className="archiving-detail__hex"># {detail.hex}</p>}
+            {detail.text && <p className="archiving-detail__text">{detail.text}</p>}
+            {detail.type && <p className="archiving-detail__type">{`Waste Type\n${detail.type}`}</p>}
+            <button type="button" className="archiving-detail__close" aria-label="닫기" onClick={() => closeRef.current()}>
+              ✕
+            </button>
+            <button type="button" className="archiving-detail__arrow archiving-detail__arrow--prev" aria-label="이전 사진" onClick={() => step(-1)}>
+              <svg viewBox="0 0 15 32.14" aria-hidden="true">
+                <polyline points="14,1 1,16.07 14,31.14" />
+              </svg>
+            </button>
+            <button type="button" className="archiving-detail__arrow archiving-detail__arrow--next" aria-label="다음 사진" onClick={() => step(1)}>
+              <svg viewBox="0 0 15 32.14" aria-hidden="true">
+                <polyline points="1,1 14,16.07 1,31.14" />
+              </svg>
+            </button>
+          </div>
+        </>
+      )}
+    </div>,
+    document.body,
+  )
+}
+
 export function Archiving() {
   const ref = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -614,6 +826,8 @@ export function Archiving() {
   useLineHighlight(ref)
   useRise(ref)
   useSlideIn(ref)
+  const [zoomKey, setZoomKey] = useState<string | null>(null)
+  const closeZoom = useCallback(() => setZoomKey(null), [])
 
   return (
     <main ref={ref} className="archiving">
@@ -780,7 +994,16 @@ export function Archiving() {
               >
                 {row.map((cell, k) => (
                   <figure key={k} className="archiving__cell">
-                    <img className="archiving__cell-img" src={cellSrc(cell)} alt="" loading="lazy" />
+                    <img
+                      className="archiving__cell-img"
+                      src={cellSrc(cell)}
+                      alt=""
+                      loading="lazy"
+                      // 확대 중에는 칸을 숨기고 확대된 사진이 대신 보인다
+                      data-cell-key={`${i}-${j}-${k}`}
+                      style={zoomKey === `${i}-${j}-${k}` ? { visibility: 'hidden' } : undefined}
+                      onClick={() => setZoomKey(`${i}-${j}-${k}`)}
+                    />
                     <figcaption className="archiving__cell-label">{cellLabel(cell)}</figcaption>
                   </figure>
                 ))}
@@ -789,6 +1012,7 @@ export function Archiving() {
           </div>
         ))}
       </div>
+      {zoomKey && <CellZoom cellKey={zoomKey} onNavigate={setZoomKey} onClosed={closeZoom} />}
     </main>
   )
 }

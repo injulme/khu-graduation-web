@@ -1058,6 +1058,194 @@ body:has(.archiving) * {
   height: 409px;
 }
 
+/* 그리드 사진 클릭 확대. body 에 띄우므로 화면 축소(zoom)가 안 걸려서 1920 기준 px 에 --z 를 곱한다 */
+.archiving-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.archiving-zoom__img {
+  position: fixed;
+  max-width: none;
+  object-fit: cover;
+  box-shadow: 0 calc(4px * var(--z)) calc(48.4px * var(--z)) calc(15px * var(--z)) #00000040;
+}
+
+/* 피그마: Montserrat Bold 200, #8B0113, 화면 가운데 정렬 */
+.archiving-zoom__label {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  color: #8b0113;
+  font-family: 'Montserrat', sans-serif;
+  font-size: calc(200px * var(--z));
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  text-align: center;
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* 상세 화면 (피그마 140:3093): 오른쪽 절반 사진 색 패널(불투명도 90%) */
+.archiving-zoom__img {
+  transition: box-shadow 0.8s ease;
+}
+
+.archiving-zoom--detail .archiving-zoom__img {
+  box-shadow: none;
+}
+
+.archiving-detail__panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
+  opacity: 0.9;
+  transition: background-color 0.4s ease;
+}
+
+/* 내용은 1920×1080 피그마 좌표 그대로 두고 화면 배율만큼 줄여 세로 가운데에 둔다 */
+.archiving-detail {
+  position: fixed;
+  top: calc((100vh - 1080px * var(--z)) / 2);
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  transform: scale(var(--z));
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.archiving-detail > * {
+  position: absolute;
+  margin: 0;
+}
+
+/* 이름·번호·기간은 패널 가운데 정렬 */
+.archiving-detail__name,
+.archiving-detail__no,
+.archiving-detail__period {
+  left: 960px;
+  width: 960px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.archiving-detail__name,
+.archiving-detail__no {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 94.15px;
+  font-weight: 700;
+  line-height: 115px;
+  letter-spacing: -0.01em;
+}
+
+.archiving-detail__name {
+  top: 87px;
+}
+
+.archiving-detail__no {
+  top: 192.45px;
+}
+
+.archiving-detail__period {
+  top: 342px;
+  font-family: 'NT Epika', serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.archiving-detail__thumb {
+  top: 565px;
+  left: 1058px;
+  width: 305px;
+  height: 222.4px;
+  max-width: none;
+  object-fit: cover;
+}
+
+.archiving-detail__hex,
+.archiving-detail__text {
+  left: 1403px;
+  font-family: 'GamtanRoad Dotum', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.archiving-detail__hex {
+  top: 665px;
+}
+
+.archiving-detail__text {
+  top: 706.99px;
+  width: 420px;
+  white-space: pre-line;
+  word-break: keep-all;
+}
+
+.archiving-detail__type {
+  top: 904px;
+  left: 1058px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.archiving-detail button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  pointer-events: auto;
+}
+
+.archiving-detail__close {
+  top: 31.77px;
+  left: 1852.17px;
+  width: 28px;
+  height: 38px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38px;
+}
+
+/* 화살표 15×32 — 누르기 쉽게 버튼은 사방 20px 더 크게 */
+.archiving-detail__arrow {
+  top: 922px;
+  width: 55px;
+  height: 72.14px;
+}
+
+.archiving-detail__arrow svg {
+  display: block;
+  width: 15px;
+  height: 32.14px;
+  margin: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5px;
+}
+
+/* 왼쪽 화살표는 사진 위라 항상 흰색 */
+.archiving-detail__arrow--prev {
+  left: 77.75px;
+  color: #ffffff;
+}
+
+.archiving-detail__arrow--next {
+  left: 1787px;
+}
+
 /* 타이틀 글자 단위 애니메이션용. 공백 폭 유지 */
 .archiving__char {
   display: inline-block;
