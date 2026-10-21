@@ -705,6 +705,11 @@ body:has(.archiving) * {
   pointer-events: none;
 }
 
+/* 첫 화면 오브젝트 등장. --enter-y 는 gsap 이 바꾼다 (Archiving.tsx useEnter) */
+.archiving [data-enter] {
+  translate: 0 var(--enter-y, 0px);
+}
+
 /* 둥실둥실 뜨는 움직임. --float 는 gsap 이 바꾼다 */
 .archiving [data-pin-start] {
   translate: 0 var(--float, 0px);

@@ -27,15 +27,17 @@ type Item = {
   pin?: 'start' | 'end'
   // 피그마가 공용 이미지와 다른 원본을 잘라 써서, 피그마에서 내보낸 이미지(public/archiving)를 쓴다
   figma?: boolean
+  // 첫 화면 등장 방향. down 은 위에서 아래로, up 은 아래에서 위로 움직이며 나타난다
+  enter?: 'down' | 'up'
 }
 
 const ITEMS: Item[] = [
-  { name: 'lid-red', w: 435.34, h: 359.05, x: -28.13, y: 394.88, angle: -134.18 },
-  { name: 'net-green', w: 239.27, h: 338.03, x: 447.28, y: 488.75 },
-  { name: 'bag-blue', w: 389, h: 384, x: 981, y: 442, blend: 'darken' },
-  { name: 'can-pocari', w: 189.05, h: 305.38, x: 1373.14, y: 497.39 },
+  { name: 'lid-red', w: 435.34, h: 359.05, x: -28.13, y: 394.88, angle: -134.18, enter: 'down' },
+  { name: 'net-green', w: 239.27, h: 338.03, x: 447.28, y: 488.75, enter: 'up' },
+  { name: 'bag-blue', w: 389, h: 384, x: 981, y: 442, blend: 'darken', enter: 'up' },
+  { name: 'can-pocari', w: 189.05, h: 305.38, x: 1373.14, y: 497.39, enter: 'down' },
   // 공용 이미지는 피그마보다 더 기울어 있어서, 피그마 노드(140:2094)를 2x 로 내보낸 이미지를 쓴다
-  { name: 'can-coke-crushed', w: 249.99, h: 376.17, x: 1614.01, y: 456.23, figma: true },
+  { name: 'can-coke-crushed', w: 249.99, h: 376.17, x: 1614.01, y: 456.23, figma: true, enter: 'up' },
   // 트레이는 같은 이미지가 두 군데 있다. 피그마 데이터엔 회전 후 외곽 박스(301.5×217.84)만 있어서
   // 피그마 렌더와 실루엣을 맞춰 원본 비율 크기와 각도를 역산했다
   { name: 'tray-foam', w: 271.96, h: 158.74, x: 1469, y: 1194, angle: 13.5, front: true, pin: 'start' },
@@ -371,8 +373,10 @@ function lockWidths(chars: HTMLElement[]) {
     c.textContent = charOf(c)
     c.style.width = ''
   })
+  // 폭을 다 읽은 뒤 한 번에 쓴다. 읽고 쓰기를 글자마다 번갈아 하면 글자 수만큼 레이아웃을 다시 계산한다
+  const widths = chars.map((c) => getComputedStyle(c).width)
   chars.forEach((c, i) => {
-    c.style.width = getComputedStyle(c).width
+    c.style.width = widths[i]
     c.textContent = shown[i]
   })
 }
@@ -577,6 +581,37 @@ function useRise(ref: RefObject<HTMLElement | null>) {
           // 글자는 아래로 내려가 있으니 제자리인 바깥 박스를 기준으로 잰다
           scrollTrigger: { trigger: words[0].parentElement, start: RISE_VIEW_START, once: true },
         })
+      })
+    }, root)
+    return () => ctx.revert()
+  }, [ref])
+}
+
+// 첫 화면 오브젝트 등장: data-enter 가 down 이면 화면 위 끝 밖에서 아래로, up 이면 화면 아래 끝 밖에서 위로 들어오며 투명에서 나타난다
+// 첫 렌더 직후 화면이 잠깐 멈춰서 CSS 애니메이션은 그 사이에 지나가 버린다. gsap 은 멈춘 시간을 건너뛰지 않는다
+const ENTER_DURATION = 1 // 나타나는 시간(초)
+const ENTER_SCREEN_H = 1080 // 출발 위치 기준 화면 높이 (1920×1080 기준 px)
+
+function useEnter(ref: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const ctx = gsap.context(() => {
+      // 회전까지 들어간 실제 보이는 박스를 1920 기준 px 로 잰다 (축소 화면에서는 zoom 만큼 나눈다)
+      const rootRect = root.getBoundingClientRect()
+      const scale = rootRect.width / root.offsetWidth
+      root.querySelectorAll<HTMLElement>('[data-enter]').forEach((el) => {
+        const r = el.getBoundingClientRect()
+        const top = (r.top - rootRect.top) / scale
+        const bottom = (r.bottom - rootRect.top) / scale
+        // down: 아래 끝이 화면 위 끝에 닿은 자리, up: 위 끝이 화면 아래 끝에 닿은 자리에서 출발
+        const from = el.dataset.enter === 'down' ? -bottom : ENTER_SCREEN_H - top
+        // transform 에는 위치·회전이 들어 있어서, 따로 노는 CSS translate 를 --enter-y 로 움직인다
+        gsap.fromTo(
+          el,
+          { '--enter-y': `${from}px`, opacity: 0 },
+          { '--enter-y': '0px', opacity: 1, duration: ENTER_DURATION, ease: 'power3.out' },
+        )
       })
     }, root)
     return () => ctx.revert()
@@ -949,6 +984,7 @@ export function Archiving() {
   useLineHighlight(ref)
   useRise(ref)
   useSlideIn(ref)
+  useEnter(ref)
   const [zoomKey, setZoomKey] = useState<string | null>(null)
   const closeZoom = useCallback(() => setZoomKey(null), [])
   const [filter, setFilter] = useState<Filter | null>(null)
@@ -994,6 +1030,7 @@ export function Archiving() {
             style={itemStyle(item)}
             data-pin-start={item.pin === 'start' ? item.name : undefined}
             data-pin-end={item.pin === 'end' ? item.name : undefined}
+            data-enter={item.enter}
           />
         ))}
         {CALLOUTS.map((c) => (
@@ -1008,7 +1045,7 @@ export function Archiving() {
           </p>
         ))}
         {/* 담배갑(피그마에서 지시선·라벨보다 위 레이어): 피그마 Mask group 140:2525 내보내기. 마스크로 잘린 실제 보이는 영역 크기라 위치는 피그마 렌더와 맞춰 측정 */}
-        <img className="archiving__figma" src={figmaSrc('cigarette')} alt="" style={{ ...at(714, 462), width: 290 }} />
+        <img className="archiving__figma" src={figmaSrc('cigarette')} alt="" data-enter="down" style={{ ...at(714, 462), width: 290 }} />
         <span className="archiving__arrow" aria-hidden="true">
           ↓
         </span>
