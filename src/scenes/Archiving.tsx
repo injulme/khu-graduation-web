@@ -238,9 +238,11 @@ const EXPORT_PHOTO: Record<number, string | null> = {
 // 칸의 waste 사진 이름 (모르면 null)
 const photoName = (cell: Cell) => (typeof cell === 'string' ? cell : (EXPORT_PHOTO[cell] ?? null))
 
-const NO = new Map(WASTE_PHOTOS.map((p) => [p.name, p.no]))
-// 번호를 모르는 칸은 피그마 값(001)
-const cellNo = (cell: Cell) => String(NO.get(photoName(cell) ?? '') || 1).padStart(3, '0')
+// 같은 사진인지 가르는 값. 사진 이름을 모르는 내보내기 칸은 피그마 id 로 가른다
+const cellId = (cell: Cell) => photoName(cell) ?? `#${cell}`
+// 번호는 전체 그리드 첫 칸부터 001, 002… 순서. 필터 화면에서도 같은 사진은 같은 번호를 쓴다
+// 전체 그리드에 없는 사진은 그 뒤 번호를 이어 붙인다 (GRID_NO 는 아래 GRID_CELLS 뒤에서 만든다)
+const cellNo = (cell: Cell) => String(GRID_NO.get(cellId(cell)) ?? 0).padStart(3, '0')
 // 피그마 표기 그대로 '( No.001)' — 닫는 괄호 앞에 공백 없음
 const cellLabel = (cell: Cell) => `( No.${cellNo(cell)})`
 const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : figmaSrc(`grid-${cell}`))
@@ -787,6 +789,10 @@ type GridCell = { key: string; cell: Cell }
 const GRID_CELLS: GridCell[] = GRID.flatMap((block, i) =>
   block.rows.flatMap((row, j) => row.map((cell, k) => ({ key: `${i}-${j}-${k}`, cell }))),
 )
+const GRID_NO = new Map<string, number>()
+for (const { cell } of [...GRID_CELLS, ...Object.values(FILTER_ROWS).flat(2).map((cell) => ({ cell }))]) {
+  if (!GRID_NO.has(cellId(cell))) GRID_NO.set(cellId(cell), GRID_NO.size + 1)
+}
 const COLOR_OF = new Map(WASTE_PHOTOS.map((p) => [p.name, p.color]))
 const detailOf = (cell: Cell) => CELL_DETAILS[photoName(cell) ?? ''] ?? {}
 const panelColor = (cell: Cell) => {
