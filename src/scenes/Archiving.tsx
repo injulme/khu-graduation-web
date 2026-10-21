@@ -25,6 +25,8 @@ type Item = {
   front?: boolean
   // 스크롤 고정 애니메이션의 출발(start)/도착(end) 위치. 도착 위치 이미지는 표시 없이 자리만 잡는다
   pin?: 'start' | 'end'
+  // 피그마가 공용 이미지와 다른 원본을 잘라 써서, 피그마에서 내보낸 이미지(public/archiving)를 쓴다
+  figma?: boolean
 }
 
 const ITEMS: Item[] = [
@@ -32,8 +34,8 @@ const ITEMS: Item[] = [
   { name: 'net-green', w: 239.27, h: 338.03, x: 447.28, y: 488.75 },
   { name: 'bag-blue', w: 389, h: 384, x: 981, y: 442, blend: 'darken' },
   { name: 'can-pocari', w: 189.05, h: 305.38, x: 1373.14, y: 497.39 },
-  // 이미지 파일에 기울기가 이미 들어가 있어서, 피그마 회전(345×172, 76.1°) 대신 회전 후 외곽 박스 크기로 넣는다
-  { name: 'can-coke-crushed', w: 250, h: 376.17, x: 1614.01, y: 456.23 },
+  // 공용 이미지는 피그마보다 더 기울어 있어서, 피그마 노드(140:2094)를 2x 로 내보낸 이미지를 쓴다
+  { name: 'can-coke-crushed', w: 249.99, h: 376.17, x: 1614.01, y: 456.23, figma: true },
   // 트레이는 같은 이미지가 두 군데 있다. 피그마 데이터엔 회전 후 외곽 박스(301.5×217.84)만 있어서
   // 피그마 렌더와 실루엣을 맞춰 원본 비율 크기와 각도를 역산했다
   { name: 'tray-foam', w: 271.96, h: 158.74, x: 1469, y: 1194, angle: 13.5, front: true, pin: 'start' },
@@ -987,7 +989,7 @@ export function Archiving() {
           <img
             key={`${item.name}-${item.y}`}
             className="archiving__object"
-            src={objectSrc(item.name)}
+            src={item.figma ? figmaSrc(item.name) : objectSrc(item.name)}
             alt=""
             style={itemStyle(item)}
             data-pin-start={item.pin === 'start' ? item.name : undefined}
