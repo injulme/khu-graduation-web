@@ -899,12 +899,13 @@ body:has(.archiving) * {
 }
 
 /* 첫 줄 색(:first-child)보다 우선하도록 목록 클래스까지 붙인다 */
-.archiving__list .archiving__list-item:hover {
+/* 누른 줄(필터 선택)은 hover 상태를 그대로 유지한다 */
+.archiving__list .archiving__list-item:is(:hover, .is-active) {
   color: var(--fill-ink, #ffffff);
   font-weight: 700;
 }
 
-.archiving__list-item:hover::before {
+.archiving__list-item:is(:hover, .is-active)::before {
   transform: scaleY(1);
 }
 
@@ -928,13 +929,13 @@ body:has(.archiving) * {
   transition: transform var(--fall-duration) var(--fall-ease);
 }
 
-.archiving__list-item:hover .archiving__hover-img img {
+.archiving__list-item:is(:hover, .is-active) .archiving__hover-img img {
   transform: none;
   transition: transform var(--jump-duration) var(--jump-ease) var(--jump-delay);
 }
 
 /* 사진이 다른 줄의 구분선 위로 오도록 hover 한 줄을 앞으로. 벗어날 때는 사진이 다 내려간 뒤에 뒤로 보낸다 */
-.archiving__list-item:hover {
+.archiving__list-item:is(:hover, .is-active) {
   z-index: 1;
   transition-delay: 0s;
 }
@@ -1056,6 +1057,94 @@ body:has(.archiving) * {
 /* 칸 내용(413px)이 줄 높이(409px)를 넘쳐도 피그마처럼 잘리지 않고 가운데 정렬된다 */
 .archiving__row--fixed {
   height: 409px;
+}
+
+/* 필터 제목 (피그마 필터 화면): 캔버스 아래쪽(5411px)부터 겹쳐 놓고, 그리드는 바로 아래(5799px)에 붙는다 */
+.archiving__filter-head {
+  position: relative;
+  height: 388px;
+  margin-top: -528px;
+  scroll-margin-top: 120px;
+}
+
+/* 테두리 3px, 둥근 알약 모양. Montserrat Bold 50 */
+.archiving__filter-back {
+  position: absolute;
+  top: 0;
+  left: 80px;
+  width: 488px;
+  height: 108px;
+  padding: 0;
+  border: 3px solid #000000;
+  border-radius: 100px;
+  background: none;
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 50px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.archiving__filter-rule {
+  position: absolute;
+  top: 156px;
+  left: 0;
+  width: 1920px;
+  border-top: 1px solid #000000;
+}
+
+.archiving__filter-title {
+  position: absolute;
+  top: 211px;
+  left: 80px;
+  margin: 0;
+  color: #000000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 100px;
+  font-weight: 700;
+  line-height: 122px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+/* White 는 피그마처럼 흰 글자에 3px 테두리. 가변 폰트는 획이 겹쳐 있어 테두리만 그리면 안쪽 선이 보이므로,
+   두 배 굵기 테두리를 먼저 그리고 흰 채움으로 안쪽 절반을 덮는다 */
+.archiving__filter-title--outline {
+  color: #ffffff;
+  -webkit-text-stroke: 6px #000000;
+  paint-order: stroke fill;
+}
+
+.archiving__filter-dot {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+}
+
+/* 흰 원은 3px 검정 테두리 */
+.archiving__filter-title--outline .archiving__filter-dot {
+  box-sizing: border-box;
+  border: 3px solid #000000;
+}
+
+/* 필터를 바꾸면 칸들이 차례로 아래에서 올라오며 나타난다 */
+.archiving__grid--filtered .archiving__cell {
+  animation: archiving-cell-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.archiving__grid--filtered .archiving__row:nth-child(2) .archiving__cell { animation-delay: 0.08s; }
+.archiving__grid--filtered .archiving__row:nth-child(3) .archiving__cell { animation-delay: 0.16s; }
+.archiving__grid--filtered .archiving__row:nth-child(n + 4) .archiving__cell { animation-delay: 0.24s; }
+
+@keyframes archiving-cell-in {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
 }
 
 /* 그리드 사진 클릭 확대. body 에 띄우므로 화면 축소(zoom)가 안 걸려서 1920 기준 px 에 --z 를 곱한다 */

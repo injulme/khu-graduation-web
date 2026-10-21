@@ -86,14 +86,14 @@ const RINGS = [
 type HoverImgSpec = { file: string; x: number; y: number; w: number; h: number }
 
 // materials 목록. hover 하면 오른쪽에 그 재질 사진이 나온다 (피그마 Waste Type 섹션 140:3193)
-const MATERIALS: { name: string; img: HoverImgSpec }[] = [
+const MATERIALS = [
   { name: 'Paper', img: { file: 'material-paper', x: 600, y: -130, w: 155, h: 200 } },
   { name: 'Glass', img: { file: 'material-glass', x: 558, y: -75, w: 171, h: 256 } },
   { name: 'Metal', img: { file: 'material-metal', x: 471, y: 30, w: 312.01, h: 280.27 } },
   { name: 'Plastic', img: { file: 'material-plastic', x: 529, y: 97, w: 179.95, h: 312.54 } },
   { name: 'Plastic Film', img: { file: 'material-plastic-film', x: 515, y: 274, w: 240, h: 253 } },
   { name: 'Other', img: { file: 'material-other', x: 515, y: 391, w: 293.99, h: 278.69 } },
-]
+] as const satisfies readonly { name: string; img: HoverImgSpec }[]
 const LIST_ROW = 110 // 목록 한 줄 간격
 const LIST_ROW_TOP = -20.5 // 줄 박스 윗부분: 글자 윗부분 기준 (app.css .archiving__list-item margin-top)
 const LIST_ROW_LINE = 110 // 줄 아래 구분선: 줄 박스 윗부분 기준 (app.css .archiving__list-item::after top)
@@ -209,10 +209,36 @@ const GRID: Block[] = [
   },
 ]
 
+// 피그마 내보내기 칸이 실제로 어떤 사진인지. 이미지를 로컬 사진과 비교해 찾았다
+// null 은 로컬 waste 사진에 없는 사진이라 번호·색을 모른다. 알면 사진 이름('White-06' 등)을 적는다
+const EXPORT_PHOTO: Record<number, string | null> = {
+  2183: 'Purple-05',
+  2202: 'Red-05',
+  2207: 'Red-06',
+  2212: 'Red-07',
+  2221: 'Red-04',
+  2232: 'Red-08',
+  2365: 'Blue-03',
+  2373: 'Green-02',
+  2398: 'Blue-02',
+  2417: 'Purple-02',
+  2430: 'Orange-05',
+  2448: 'Orange-04',
+  2457: 'Orange-06',
+  2462: 'Black-03',
+  2467: 'Green-01',
+  2500: 'White-01',
+  2508: null, // 흰 일회용 컵 더미
+  2513: null, // 흰 스티로폼 도시락 용기
+}
+// 칸의 waste 사진 이름 (모르면 null)
+const photoName = (cell: Cell) => (typeof cell === 'string' ? cell : (EXPORT_PHOTO[cell] ?? null))
+
 const NO = new Map(WASTE_PHOTOS.map((p) => [p.name, p.no]))
-// 피그마 표기 그대로 '( No.001)' — 닫는 괄호 앞에 공백 없음. 번호를 모르는 피그마 내보내기 칸은 피그마 값(001) 유지
-const cellLabel = (cell: Cell) =>
-  `( No.${String((typeof cell === 'string' && NO.get(cell)) || 1).padStart(3, '0')})`
+// 번호를 모르는 칸은 피그마 값(001)
+const cellNo = (cell: Cell) => String(NO.get(photoName(cell) ?? '') || 1).padStart(3, '0')
+// 피그마 표기 그대로 '( No.001)' — 닫는 괄호 앞에 공백 없음
+const cellLabel = (cell: Cell) => `( No.${cellNo(cell)})`
 const cellSrc = (cell: Cell) => (typeof cell === 'string' ? photoSrc(cell) : figmaSrc(`grid-${cell}`))
 
 gsap.registerPlugin(ScrollTrigger)
@@ -612,11 +638,11 @@ const DETAIL_DURATION = 0.8
 const DETAIL_EASE = 'power3.inOut'
 const DETAIL_SWAP = 0.4 // 이전/다음 사진으로 바뀔 때 나타나는 시간(초)
 
-// 상세 화면 사진별 내용. 피그마에 있는 No.015 만 채워 뒀다. 없는 사진은 번호와 작은 사진만 나온다
-// hex 를 비우면 패널 색은 사진 색 이름의 COLOR_FILL 을 쓴다
+// 상세 화면 사진별 내용(키는 사진 이름). 피그마 상세 화면에 있는 붉은 망 사진(Red-07)만 채워 뒀다
+// 내용이 없는 사진은 번호와 작은 사진만 나온다. hex 를 비우면 패널 색은 사진 색 이름의 COLOR_FILL 을 쓴다
 type CellDetail = { name?: string; period?: string; hex?: string; text?: string; type?: string }
 const CELL_DETAILS: Partial<Record<string, CellDetail>> = {
-  'Red-15': {
+  'Red-07': {
     name: 'NETTED SHELLS',
     period: 'DECADES — CENTURIES',
     hex: '8B0113',
@@ -625,18 +651,111 @@ const CELL_DETAILS: Partial<Record<string, CellDetail>> = {
   },
 }
 
-// 그리드 순서대로 모든 칸. key 는 블록-줄-칸 번호
-const GRID_CELLS = GRID.flatMap((block, i) =>
+// 목록 필터: Waste Type 재질 또는 Similar Colors 색
+type Material = (typeof MATERIALS)[number]['name']
+type Filter = { kind: 'material'; value: Material } | { kind: 'color'; value: WasteColor }
+
+// 필터별 그리드 줄 배치 (피그마 필터 화면 그대로). 칸은 전체 그리드와 같은 사진 이름·내보내기 번호
+const FILTER_ROWS: Record<Material | WasteColor, Cell[][]> = {
+  Paper: [
+    ['Red-21', 'Red-11', 'Orange-15', 'Orange-03'],
+    ['Orange-18', 'Orange-16', 'Yellow-07', 'Green-11'],
+    ['Blue-11', 'Blue-04', 2398, 'White-03'],
+    ['Blue-01', 2508],
+  ],
+  Glass: [
+    ['Orange-10', 'Orange-17', 'Brown-01'],
+  ],
+  Metal: [
+    ['Red-10', 'Red-18', 'Red-16', 'Red-03'],
+    ['Yellow-09', 'Green-03', 2365, 2373],
+    ['Blue-11', 'Blue-08', 'Blue-09', 'Purple-03'],
+    ['Orange-08', 'Red-12', 'White-05', 2500],
+  ],
+  Plastic: [
+    ['Red-14', 2207, 'Red-02', 'Orange-13'],
+    ['Orange-19', 'Black-08', 'Yellow-08', 'Green-04'],
+    ['Green-05', 'Green-10', 'Yellow-04', 'Green-06'],
+    ['Blue-11', 'Blue-12', 'Blue-06', 'Blue-13'],
+    ['Purple-04', 'Orange-21', 'Black-06', 'Black-07'],
+    ['Black-02', 2508],
+  ],
+  'Plastic Film': [
+    [2183, 2202, 2221, 'Red-19'],
+    [2232, 'Orange-12', 'Orange-13', 'Yellow-06'],
+    ['Yellow-02', 'Yellow-05', 'Orange-20', 'Red-01'],
+    ['Black-05', 2467, 'Yellow-01'],
+  ],
+  Other: [
+    ['Red-15', 'Purple-07', 'Purple-08', 'Red-20'],
+    ['Red-09', 'Red-13', 2212, 'Orange-11'],
+    ['Orange-03', 'Orange-22', 'Orange-14', 'Yellow-03'],
+    ['Green-09', 'Green-07', 'Green-08', 'Blue-07'],
+    ['Blue-10', 'Purple-09', 'Blue-05', 2417],
+    ['Purple-01', 'Purple-06', 'Orange-09', 2430],
+    ['Red-17', 'Orange-07', 2457, 2462],
+    ['Black-04', 'White-04', 'Black-01', 2513],
+  ],
+  Red: [
+    ['Red-15', 'Purple-07', 'Purple-08', 'Red-21'],
+    ['Red-10', 'Red-20', 'Red-18', 2183],
+    ['Red-09', 'Red-11', 'Red-13', 'Red-14'],
+    [2202, 2207, 2212, 'Red-02'],
+    [2221, 'Red-16', 'Red-19', 2232],
+  ],
+  Orange: [
+    ['Orange-10', 'Orange-11', 'Orange-12', 'Red-03'],
+    ['Orange-15', 'Orange-13', 'Orange-03', 'Orange-17'],
+    ['Orange-19', 'Orange-22', 'Black-08', 'Orange-18'],
+  ],
+  Yellow: [
+    ['Orange-14', 'Yellow-06', 'Yellow-02', 'Yellow-03'],
+    ['Yellow-08', 'Yellow-05', 'Orange-16', 'Orange-20'],
+  ],
+  Green: [
+    ['Yellow-09', 'Green-04', 'Green-05', 'Green-10'],
+    ['Yellow-04', 'Green-11', 'Green-09', 'Green-03'],
+    ['Green-06', 'Green-07', 'Green-08', 'Yellow-07'],
+  ],
+  Blue: [
+    ['Blue-07', 2365, 'Orange-02', 2373],
+    ['Blue-11', 'Blue-10', 'Blue-04', 'Blue-08'],
+    ['Blue-09', 'Blue-12', 2398, 'Blue-06'],
+  ],
+  Purple: [
+    ['Blue-13', 'Purple-09', 'Blue-05', 2417],
+    ['Purple-01', 'Purple-04', 'Purple-06', 'Purple-03'],
+  ],
+  Brown: [
+    ['Orange-21', 'Orange-09', 2430, 'Brown-01'],
+    ['Red-17', 'Red-01', 'Orange-07', 2448],
+  ],
+  Black: [
+    ['Black-05', 2457, 2462, 2467],
+    ['Black-02', 'Black-04', 'Orange-08', 'Blue-01'],
+  ],
+  White: [
+    ['White-03', 'Red-12', 'White-05', 'White-04'],
+    ['Black-06', 'Black-07', 'Yellow-01', 'Black-01'],
+    [2500, 'White-02', 2508, 2513],
+  ],
+}
+const filterRows = (f: Filter) => FILTER_ROWS[f.value]
+const filterCells = (f: Filter): GridCell[] =>
+  filterRows(f).flatMap((row, j) => row.map((cell, k) => ({ key: `f-${j}-${k}`, cell })))
+
+// 그리드 칸. key 는 칸을 찾고(data-cell-key) 확대 중 숨기는 데 쓴다
+type GridCell = { key: string; cell: Cell }
+// 전체 그리드: key 는 블록-줄-칸 번호
+const GRID_CELLS: GridCell[] = GRID.flatMap((block, i) =>
   block.rows.flatMap((row, j) => row.map((cell, k) => ({ key: `${i}-${j}-${k}`, cell }))),
 )
-const CELL_BY_KEY = new Map(GRID_CELLS.map((c) => [c.key, c.cell]))
 const COLOR_OF = new Map(WASTE_PHOTOS.map((p) => [p.name, p.color]))
-const cellNo = (cell: Cell) => String((typeof cell === 'string' && NO.get(cell)) || 1).padStart(3, '0')
-const detailOf = (cell: Cell) => (typeof cell === 'string' ? CELL_DETAILS[cell] : undefined) ?? {}
+const detailOf = (cell: Cell) => CELL_DETAILS[photoName(cell) ?? ''] ?? {}
 const panelColor = (cell: Cell) => {
   const hex = detailOf(cell).hex
   if (hex) return `#${hex}`
-  const color = typeof cell === 'string' ? COLOR_OF.get(cell) : undefined
+  const color = COLOR_OF.get(photoName(cell) ?? '')
   return (color && COLOR_FILL[color]) || '#000000'
 }
 const cellEl = (key: string) => document.querySelector<HTMLImageElement>(`[data-cell-key="${key}"]`)
@@ -649,10 +768,12 @@ const rectOf = (el: Element) => {
 // 화면 축소(zoom) 영향을 받지 않도록 body 에 띄운다. 크기는 1920 기준 px 에 축소 배율(--z)을 곱해 화면 px 로 쓴다
 // hover 로 커진 사진 자리에서 그대로 이어 커지고, 닫으면(확대 중 아무 곳 클릭, ✕, Esc) 지금 보고 있는 사진의 칸 자리로 줄어든다
 function CellZoom({
+  cells,
   cellKey,
   onNavigate,
   onClosed,
 }: {
+  cells: GridCell[] // 지금 그리드에 보이는 칸 (이전/다음 순서)
   cellKey: string
   onNavigate: (key: string) => void
   onClosed: () => void
@@ -667,7 +788,7 @@ function CellZoom({
   const tlRef = useRef<gsap.core.Timeline | null>(null)
   const closeRef = useRef(() => {})
   const swapped = useRef(false)
-  const cell = CELL_BY_KEY.get(cellKey) ?? ''
+  const cell = cells.find((c) => c.key === cellKey)?.cell ?? ''
   const detail = detailOf(cell)
   const panel = panelColor(cell)
 
@@ -757,8 +878,8 @@ function CellZoom({
   })
 
   const step = (d: number) => {
-    const i = GRID_CELLS.findIndex((c) => c.key === cellKey)
-    onNavigate(GRID_CELLS[(i + d + GRID_CELLS.length) % GRID_CELLS.length].key)
+    const i = cells.findIndex((c) => c.key === cellKey)
+    onNavigate(cells[(i + d + cells.length) % cells.length].key)
   }
   const ink = inkOn(panel)
 
@@ -828,6 +949,18 @@ export function Archiving() {
   useSlideIn(ref)
   const [zoomKey, setZoomKey] = useState<string | null>(null)
   const closeZoom = useCallback(() => setZoomKey(null), [])
+  const [filter, setFilter] = useState<Filter | null>(null)
+  const headRef = useRef<HTMLDivElement>(null)
+  const shownCells = useMemo(() => (filter ? filterCells(filter) : GRID_CELLS), [filter])
+  // 목록을 누르면 그 타입·색으로 거르고 필터 제목으로 내려간다. 같은 줄을 다시 누르면 전체로 돌아간다
+  const pick = (next: Filter) => {
+    const same = filter?.value === next.value
+    setFilter(same ? null : next)
+    if (!same) requestAnimationFrame(() => headRef.current?.scrollIntoView({ behavior: 'smooth' }))
+  }
+  // 필터 제목 위 버튼: Waste Type 목록으로 돌아간다
+  const backToList = () =>
+    document.querySelector('[data-list="materials"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 
   return (
     <main ref={ref} className="archiving">
@@ -942,9 +1075,13 @@ export function Archiving() {
         <h2 className="archiving__section-title archiving__section-title--waste" data-slide="left">
           Waste Type
         </h2>
-        <ul className="archiving__list" style={at(1109, 3451)}>
+        <ul className="archiving__list" style={at(1109, 3451)} data-list="materials">
           {MATERIALS.map(({ name, img }, i) => (
-            <li key={name} className="archiving__list-item archiving__list-item--material">
+            <li
+              key={name}
+              className={`archiving__list-item archiving__list-item--material${filter?.value === name ? ' is-active' : ''}`}
+              onClick={() => pick({ kind: 'material', value: name })}
+            >
               {/* 줄 높이 박스 밖은 잘라서 글자가 아래에서 올라오며 나타난다 (useRise) */}
               <span className="archiving__rise archiving__rise--line">
                 <span className="archiving__rise-inner" data-rise="materials">
@@ -957,9 +1094,14 @@ export function Archiving() {
         </ul>
 
         {/* Similar Colors */}
-        <ul className="archiving__list" style={at(-1, 4337)}>
+        <ul className="archiving__list" style={at(-1, 4337)} data-list="colors">
           {COLORS.map((c, i) => (
-            <li key={c} className="archiving__list-item archiving__list-item--color" style={fillStyle(COLOR_FILL[c])}>
+            <li
+              key={c}
+              className={`archiving__list-item archiving__list-item--color${filter?.value === c ? ' is-active' : ''}`}
+              style={fillStyle(COLOR_FILL[c])}
+              onClick={() => pick({ kind: 'color', value: c })}
+            >
               <span className="archiving__rise archiving__rise--line">
                 <span className="archiving__rise-inner" data-rise="colors">
                   {c}
@@ -977,9 +1119,27 @@ export function Archiving() {
         </h2>
       </div>
 
-      {/* 사진 그리드 */}
-      <div className="archiving__grid">
-        {GRID.map((block, i) => (
+      {/* 필터 제목 (피그마 140:3957 등): 버튼 → 구분선 → 타입·색 이름. 필터를 고르면 그리드가 140px 올라와 그 아래에 붙는다 */}
+      {filter && (
+        <div ref={headRef} className="archiving__filter-head">
+          {/* 피그마는 색 필터에서도 'Waste Type →' 이다 */}
+          <button type="button" className="archiving__filter-back" onClick={backToList}>
+            Waste Type →
+          </button>
+          <span className="archiving__filter-rule" aria-hidden="true" />
+          <h2 className={`archiving__filter-title${filter.value === 'White' ? ' archiving__filter-title--outline' : ''}`}>
+            {filter.value}
+            {/* 색 필터는 이름 옆에 그 색 원 */}
+            {filter.kind === 'color' && (
+              <span className="archiving__filter-dot" style={{ background: COLOR_FILL[filter.value] ?? '#000000' }} />
+            )}
+          </h2>
+        </div>
+      )}
+
+      {/* 사진 그리드: 전체는 피그마 블록 배치, 필터는 피그마 필터 화면의 줄 배치 */}
+      <div key={filter?.value ?? 'all'} className={`archiving__grid${filter ? ' archiving__grid--filtered' : ''}`}>
+        {(filter ? [{ rows: filterRows(filter) } as Block] : GRID).map((block, i) => (
           <div key={i} className={`archiving__block${block.pad ? ' archiving__block--pad' : ''}`}>
             {block.rows.map((row, j) => (
               <div
@@ -992,27 +1152,30 @@ export function Archiving() {
                   .filter(Boolean)
                   .join(' ')}
               >
-                {row.map((cell, k) => (
-                  <figure key={k} className="archiving__cell">
-                    <img
-                      className="archiving__cell-img"
-                      src={cellSrc(cell)}
-                      alt=""
-                      loading="lazy"
-                      // 확대 중에는 칸을 숨기고 확대된 사진이 대신 보인다
-                      data-cell-key={`${i}-${j}-${k}`}
-                      style={zoomKey === `${i}-${j}-${k}` ? { visibility: 'hidden' } : undefined}
-                      onClick={() => setZoomKey(`${i}-${j}-${k}`)}
-                    />
-                    <figcaption className="archiving__cell-label">{cellLabel(cell)}</figcaption>
-                  </figure>
-                ))}
+                {row.map((cell, k) => {
+                  const key = filter ? `f-${j}-${k}` : `${i}-${j}-${k}`
+                  return (
+                    <figure key={k} className="archiving__cell">
+                      <img
+                        className="archiving__cell-img"
+                        src={cellSrc(cell)}
+                        alt=""
+                        loading="lazy"
+                        // 확대 중에는 칸을 숨기고 확대된 사진이 대신 보인다
+                        data-cell-key={key}
+                        style={zoomKey === key ? { visibility: 'hidden' } : undefined}
+                        onClick={() => setZoomKey(key)}
+                      />
+                      <figcaption className="archiving__cell-label">{cellLabel(cell)}</figcaption>
+                    </figure>
+                  )
+                })}
               </div>
             ))}
           </div>
         ))}
       </div>
-      {zoomKey && <CellZoom cellKey={zoomKey} onNavigate={setZoomKey} onClosed={closeZoom} />}
+      {zoomKey && <CellZoom cells={shownCells} cellKey={zoomKey} onNavigate={setZoomKey} onClosed={closeZoom} />}
     </main>
   )
 }
