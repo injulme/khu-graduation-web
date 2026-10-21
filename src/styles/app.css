@@ -1017,10 +1017,27 @@ body:has(.archiving) * {
 }
 
 .archiving__cell-img {
+  --zoom-duration: 0.5s;
+  --zoom-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
   display: block;
   width: 480px;
   height: 350px;
   object-fit: cover;
+  box-shadow: 0 0 0 0 #00000000;
+  transition:
+    transform var(--zoom-duration) var(--zoom-ease),
+    box-shadow var(--zoom-duration) var(--zoom-ease),
+    z-index 0s var(--zoom-duration);
+}
+
+/* hover 하면 가운데 기준으로 576×420(1.2배)까지 커진다. 옆 칸 위로 올라오고, 벗어날 때는 다 줄어든 뒤에 뒤로 보낸다 */
+.archiving__cell-img:hover {
+  z-index: 1;
+  transform: scale(1.2);
+  /* 그림자도 1.2배로 같이 커지므로, 커진 뒤 0 4px 48.4px 15px 이 되도록 1.2 로 나눠 둔다 */
+  box-shadow: 0 calc(4px / 1.2) calc(48.4px / 1.2) calc(15px / 1.2) #00000040;
+  transition-delay: 0s;
 }
 
 .archiving__cell-label {
