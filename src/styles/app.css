@@ -1166,13 +1166,12 @@ body:has(.archiving) * {
   box-shadow: 0 calc(4px * var(--z)) calc(48.4px * var(--z)) calc(15px * var(--z)) #00000040;
 }
 
-/* 피그마: Montserrat Bold 200, #8B0113, 화면 가운데 정렬 */
+/* 피그마: Montserrat Bold 200, 화면 가운데 정렬. 색은 사진의 패널 색 (Archiving.tsx CellZoom) */
 .archiving-zoom__label {
   position: fixed;
   left: 0;
   width: 100%;
   margin: 0;
-  color: #8b0113;
   font-family: 'Montserrat', sans-serif;
   font-size: calc(200px * var(--z));
   font-weight: 700;
@@ -1183,7 +1182,7 @@ body:has(.archiving) * {
   pointer-events: none;
 }
 
-/* 상세 화면 (피그마 140:3093): 오른쪽 절반 사진 색 패널(불투명도 90%) */
+/* 상세 화면 (피그마 140:3093, 컬러칩 338:1748): 오른쪽 절반 사진 색 패널 */
 .archiving-zoom__img {
   transition: box-shadow 0.8s ease;
 }
@@ -1198,7 +1197,6 @@ body:has(.archiving) * {
   bottom: 0;
   left: 50%;
   width: 50%;
-  opacity: 0.9;
   transition: background-color 0.4s ease;
 }
 
@@ -1279,7 +1277,7 @@ body:has(.archiving) * {
 
 .archiving-detail__text {
   top: 706.99px;
-  width: 420px;
+  width: 429px;
   white-space: pre-line;
   word-break: keep-all;
 }

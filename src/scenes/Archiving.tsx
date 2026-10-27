@@ -677,17 +677,222 @@ const DETAIL_DURATION = 0.8
 const DETAIL_EASE = 'power3.inOut'
 const DETAIL_SWAP = 0.4 // 이전/다음 사진으로 바뀔 때 나타나는 시간(초)
 
-// 상세 화면 사진별 내용(키는 사진 이름). 피그마 상세 화면에 있는 붉은 망 사진(Red-07)만 채워 뒀다
-// 내용이 없는 사진은 번호와 작은 사진만 나온다. hex 를 비우면 패널 색은 사진 색 이름의 COLOR_FILL 을 쓴다
-type CellDetail = { name?: string; period?: string; hex?: string; text?: string; type?: string }
+// 상세 화면 사진별 내용 (피그마 컬러칩 완성형 338:1748). 키는 cellId (사진 이름, 모르면 '#피그마 id')
+// 피그마 컬러칩 번호는 필터에만 있는 사진을 중간에 끼워 069 부터 그리드 번호와 다르다. 사진은 썸네일로 맞췄다
+// color 는 패널 색, hex 는 패널 색과 다르게 적힌 표기(피그마 그대로), ink 'black' 은 검정 글자(기본 흰색)
+// nameSize·nameSpacing 은 긴 이름을 피그마에서 줄인 값 (기본 94.15px, -0.01em)
+type CellDetail = {
+  name: string
+  nameSize?: number
+  nameSpacing?: string
+  color: string
+  hex?: string
+  ink?: 'black'
+  type: string
+  text: string
+}
+const DETAIL_PERIOD = 'DECADES — CENTURIES' // 피그마 100장 모두 같은 값
 const CELL_DETAILS: Partial<Record<string, CellDetail>> = {
-  'Red-07': {
-    name: 'NETTED SHELLS',
-    period: 'DECADES — CENTURIES',
-    hex: '8B0113',
-    text: '낡은 배관 아래에 매달린 붉은 망 속에서 발견한 색. 버려진 것과 자연의 흔적이 뒤섞인 채, \n어느새 익숙한 풍경의 일부로 남아 있다.',
-    type: 'Other',
-  },
+  // No.001
+  'Red-15': { name: 'DIRTY RUBY', color: 'FD5B64', type: 'Other', text: '붉은 비닐봉투가 겹겹이 쌓이며 만들어낸 루비색. 버려진 순간에도 선명한 색을 유지한 채, 거리의\n익숙한 풍경 속에 자연스럽게 섞여 있다.' },
+  // No.002
+  'Purple-07': { name: 'NEON PETAL', color: 'F55396', type: 'Other', text: '검은 망 사이로 드러난 형광빛 분홍색. 버려진 포장재의 선명한 색이 자연물처럼 흩어져\n낯선 꽃잎의 흔적을 만든다.' },
+  // No.003
+  'Purple-08': { name: 'BIN PINK', color: 'EE4A75', type: 'Plastic', text: '낡은 공간 속 플라스틱 통에서 발견한 강렬한 분홍색. 일상을 담아내던 용기는 버려진 공간에서도 여전히\n또렷한 색으로 존재한다.' },
+  // No.004
+  'Red-21': { name: 'WORN STRAWBERRY', nameSize: 88.0, nameSpacing: '-0.05em', color: 'F93A5D', type: 'Paper', text: '풀숲 사이 버려진 포장지에서 발견한 달콤한 딸기빛. 먹고 남은 기억을 담았던 포장은 자연 속에 남아 새로운 풍경의 일부가 된다.' },
+  // No.005
+  'Red-10': { name: 'CLOUDY PEACH', color: 'F086B4', type: 'Metal', text: '무채색 공간 속에서 유난히 선명하게 드러난 분홍빛 캔. 한때 음료를 담고 있던 물건은 비워진 뒤에도 소비의 흔적을 색으로 남긴다.' },
+  // No.006
+  'Red-20': { name: 'DUST BUNNY', color: 'AE8474', type: 'Other', text: '아스팔트 위에 홀로 남겨진 인형에서 발견한 부드러운 갈색. 누군가의 일상이었던 작은 존재가 버려진 뒤에는 낯선 거리의 풍경으로 남아 있다.' },
+  // No.007
+  'Red-18': { name: 'ENERGY CORAL', color: 'FA6D80', type: 'Metal', text: '수많은 캔이 속 차갑고 반사적인 분홍빛. 반복된 소비의 흔적들이 쌓이며 하나의 새로운 금속\n풍경을 만들어낸다.' },
+  // No.008
+  'Purple-05': { name: 'WASTE PINK', color: 'E2266B', type: 'Plastic Film', text: '구겨진 포장지 위에 남은 선명한 분홍색. 작고 가벼운 소비의 흔적 하나가 길 위에 남아 예상보다 오래 풍경을 차지한다.' },
+  // No.009
+  'Red-09': { name: 'BIN ORANGE', color: 'F44E1C', type: 'Plastic', text: '낡은 플라스틱 상자에서 발견한 따뜻한 주황색. 버려진 물건은 본래의 용도를 잃고도 강한 색만큼은\n그대로 간직한다.' },
+  // No.010
+  'Red-11': { name: 'TRACE RED', color: 'E5303D', type: 'Other', text: '돌과 식물 사이 과자통에서 발견한 깊은 붉은색. 자연의 무채색 틈에 남겨진 인공적인 색이 오히려\n풍경의 중심이 된다.' },
+  // No.011
+  'Red-13': { name: 'THICK DARK RED', color: '7A1B17', type: 'Other', text: '겹겹이 쌓인 붉은 봉투가 만들어낸 탁한 붉은색. 버려진 봉투들은 자연스럽게 쌓여 하나의 덩어리가\n되고, 어느새 익숙한 풍경처럼 자리 잡는다.' },
+  // No.012
+  'Red-14': { name: 'PLASTIK PEACH', color: 'CB6F6F', type: 'Plastic', text: '투명한 플라스틱 병에 남은 복숭아빛. 한때 손에 쥐고 마셨던 물건이 이제는 길가에 남아\n일상의 흔적이 된다.' },
+  // No.013
+  'Red-05': { name: 'BIG SCARLET', color: 'E1041F', type: 'Plastic Film', text: '돌 틈 속 과자 포장에서 발견한 강렬한 주홍색. 자연의 거친 질감 사이에 소비의 색이 선명하게\n박혀 있다.' },
+  // No.014
+  'Red-06': { name: 'PLASTIK RED', color: 'E82C33', type: 'Plastic Film', text: '돌무더기 위 길게 놓인 빨대에서 발견한 선명한 붉은색. 작고 가벼운 물건 하나가 자연의 무채색 풍경 속에서 예상치 못한 색의 흔적을 남긴다.' },
+  // No.015
+  'Red-07': { name: 'NETTED SHELLS', color: '8B0113', type: 'Other', text: '낡은 배관 아래에 매달린 붉은 망 속에서 발견한 색. 버려진 것과 자연의 흔적이 뒤섞인 채,\n어느새 익숙한 풍경의 일부로 남아 있다.' },
+  // No.016
+  'Red-02': { name: 'ROLLER RED', color: 'B01922', type: 'Plastic', text: '모래 위에 버려진 헤어롤에서 발견한 선명한 붉은색. 한때 일상의 도구였던 물건은 버려진 뒤에도\n색을 잃지 않은 채 낯선 풍경의 일부로 남아 있다.' },
+  // No.017
+  'Red-04': { name: 'CRUSHED RED', color: 'DD122A', type: 'Plastic Film', text: '길 위에 버려진 작은 포장에서 발견한 선명한 붉은색. 귀여운 캐릭터를 담았던 소비의 이미지는 버려진 뒤에도 강렬한 색으로 풍경에 남아 있다.' },
+  // No.018
+  'Red-16': { name: 'RUST RED', color: 'F23333', type: 'Metal', text: '물 속에 빠진 찌그러진 캔에서 발견한 익숙한 붉은색. 수많은 사람에게 익숙한 브랜드의 색이 소비 이후에는 거리의 흔적으로 남는다.' },
+  // No.019
+  'Red-19': { name: 'CRIMSON TRACE', color: 'F63326', type: 'Plastic Film', text: '아스팔트 위에 버려진 포장에서 발견한 짙은 붉은색. 작은 포장 하나가 무채색 거리 위에 선명한 흔적을 남기며 시선을 붙잡는다.' },
+  // No.020
+  'Red-08': { name: 'ASH BLUSH', color: 'F9837C', type: 'Plastic Film', text: '구겨진 비닐봉투에서 발견한 옅은 분홍빛. 한 번의 소비를 위해 사용된 얇은 막이 버려진 뒤에도 거리의 색으로 남아 있다.' },
+  // No.021
+  'Orange-10': { name: 'ACID VITA', color: 'F2950C', type: 'Glass', text: '나무 아래 놓인 병에서 발견한 깊고 따뜻한 호박색. 자연의 어두운 색 사이에 놓인 유리병은 주변 풍경과\n묘하게 닮은 색을 띤다.' },
+  // No.022
+  'Orange-11': { name: 'DISCARD TANGERINE', nameSize: 89.15, nameSpacing: '-0.05em', color: 'F07702', type: 'Other', text: '수많은 쓰레기봉투 사이에서 발견한 선명한 주황색. 반복해서 쌓인 봉투들은 어느새 하나의 거대한 색 덩어리가 되어버린다.' },
+  // No.023
+  'Orange-12': { name: 'FILM YELLOW', color: 'F0B053', type: 'Plastic Film', text: '투명한 봉투 사이로 드러난 장난감의 노란색. 놀이의 흔적이었던 밝은 색은 버려진 순간부터 자연과 어울리지 않는 낯선 풍경이 된다.' },
+  // No.024
+  'Red-03': { name: 'RUST YELLOW', color: 'EDD71A', ink: 'black', type: 'Metal', text: '버려진 캔의 뚜껑에서 발견한 오래된 노란빛. 작은 금속 조각 하나가 주변의 회색 풍경과 대비되며 강한 존재감을 남긴다.' },
+  // No.025
+  'Orange-15': { name: 'AMBER CUP', color: 'ED8B30', type: 'Paper', text: '길거리 쓰레기들 사이에서 발견한 따뜻한 주황빛. 일상적으로 사용되던 용기가 버려진 뒤에도 소비의 순간을 떠올리게 하는 색을 간직한다.' },
+  // No.026
+  'Orange-13': { name: 'FALLEN WRAP', color: 'F3BE56', type: 'Plastic Film', text: '노란 포장재가 겹쳐진 틈에서 발견한 밝은 오렌지색. 가벼운 포장 하나가 버려진 공간에 예상치 못한 생생한 색을 남긴다.' },
+  // No.027
+  'Orange-03': { name: 'GARBAGE GOLD', color: 'BB8546', type: 'Other', text: '종이상자와 포장재가 뒤섞인 곳에서 발견한 탁한 황금빛. 상품을 보호하던 포장들은 소비가 끝난 뒤 하나의 거대한 폐기 풍경으로 변한다.' },
+  // No.028
+  'Orange-17': { name: 'POLLUTED SCARLET', nameSize: 93.15, nameSpacing: '-0.05em', color: 'BC4917', type: 'Glass', text: '길가에 남겨진 여러 병에서 발견한 짙은 주황색. 투명한 병과 어두운 유리의 색이 겹쳐지며 오래된 거리의 풍경처럼 남아 있다.' },
+  // No.029
+  'Orange-19': { name: 'BARLEY YELLOW', color: 'FFBD00', type: 'Plastic', text: '풀숲 사이에 놓인 음료병에서 발견한 귀여운 노란색. 자연의 잎과 어우러진 병은 마치 식물의 일부처럼 풍경에 스며든다.' },
+  // No.030
+  'Orange-22': { name: 'GOLDEN FOIL', color: 'A88648', type: 'Plastic Film', text: '구겨진 포장재에서 발견한 탁한 금빛. 빛을 반사하던 인공적인 표면이 자연물 사이에 놓이며 낯선 질감을 만든다.' },
+  // No.031
+  'Black-08': { name: 'MURSKY MILK', color: 'E9DBB4', ink: 'black', type: 'Plastic', text: '깨끗한 흰 플라스틱 용기 속 비치는 바나나 우유의 색. 자연의 어두운 색과 대비되며 너무 익숙해서 쉽게 지나치는 일상의 색을 드러낸다.' },
+  // No.032
+  'Orange-18': { name: 'PAPER BEIGE', color: 'E2C7AD', ink: 'black', type: 'Paper', text: '찢겨진 종이 포장에서 발견한 부드러운 베이지색. 한때 물건을 담고 보호하던 종이는 버려진 뒤 자연과 인공의 경계를 흐리며 남아 있다.' },
+  // No.033
+  'Orange-14': { name: 'BIN MUSTARD', color: 'E6C559', type: 'Other', text: '길가에 놓인 노란 봉투에서 발견한 탁한 겨자색. 자연의 흙빛과 닮은 색을 가진 비닐은 오히려 자연 속에서 쉽게 모습을 감춘다.' },
+  // No.034
+  'Yellow-06': { name: 'FADED LEMON', color: 'EBE87B', ink: 'black', type: 'Plastic Film', text: '풀숲 사이에 버려진 과자 포장에서 발견한 밝은 레몬색. 자연의 초록 사이에 자리 잡은 인공적인 노란색이 마치 하나의 식물처럼 보인다.' },
+  // No.035
+  'Yellow-02': { name: 'WASTE KICK', color: 'F0C400', type: 'Plastic Film', text: '땅에 떨어진 과자 포장에서 발견한 선명한 노란색.\n먹는 순간을 위해 만들어진 포장이 소비 이후에는 자연 속에 남겨진 인공적인 색이 된다.' },
+  // No.036
+  'Yellow-03': { name: 'FOGGY YELLOW', color: 'F3F55E', ink: 'black', type: 'Plastic Film', text: '반투명한 비닐에서 발견한 흐릿한 노란빛. 빛을 통과시키는 얇은 막이 자연의 색과 겹쳐지며 쉽게 구분되지 않는 풍경을 만든다.' },
+  // No.037
+  'Yellow-08': { name: 'PLASTIK YELLOW', color: 'FCE435', ink: 'black', type: 'Plastic', text: '아스팔트 위 노란 조각에서 발견한 강렬한 신호색. 위험을 알리는 듯한 색이지만 반복되는 거리의 풍경\n속에서는 쉽게 무시된다.' },
+  // No.038
+  'Yellow-05': { name: 'DUST YELLOW', color: 'CFB86C', type: 'Paper', text: '풀과 흙밭 속 노란 포장재에서 발견한 탁한 황색. 자연의 흙빛과 비슷한 색을 가진 인공물이 어느새 풍경 속에 자연스럽게 섞여 있다.' },
+  // No.039
+  'Orange-16': { name: 'CARDBOARD GOLD', nameSpacing: '-0.03em', color: 'E1C157', type: 'Paper', text: '쌓여 있는 폐박스에서 발견한 바랜 황금빛. 상품을 담았던 종이상자는 소비가 끝난 뒤 또 다른 도시의 풍경을 구성한다.' },
+  // No.040
+  'Orange-20': { name: 'DIRTY HONEY', color: 'CEB057', type: 'Plastic Film', text: '풀숲에 남겨진 과자 포장지에서 발견한 달콤한 꿀빛. 먹고 남은 포장은 자연의 갈색과 비슷한 색을 띠며\n조용히 주변에 스며든다.' },
+  // No.041
+  'Yellow-09': { name: 'COCA CAN MOSS', color: 'CECE51', type: 'Metal', text: '돌 위에 놓인 찌그러진 캔에서 발견한 탁한 이끼색. 자연의 초록과 닮아버린 인공적인 색은 버려진 물건과 주변 환경의 경계를 흐린다.' },
+  // No.042
+  'Green-04': { name: 'THROWN GREENTEA', nameSize: 90.15, nameSpacing: '-0.05em', color: '96A942', type: 'Plastic', text: '초록빛이 번진 바닥 위에서 발견한 투명 플라스틱 컵. 버려진 컵과 주변의 색이 겹쳐지며 자연인지 폐기물인지 쉽게 구분되지 않는 장면을 만든다.' },
+  // No.043
+  'Green-05': { name: 'DISCARD NEON', color: '9EF028', ink: 'black', type: 'Plastic', text: '낙엽 사이에서 발견한 라이터의 강렬한 형광 연두색. 자연에서는 보기 어려운 인공적인 색이 오히려 주변의 초록과 섞이며 하나의 풍경이 된다.' },
+  // No.044
+  'Green-10': { name: 'BOTTLE GREEN', color: '51A452', type: 'Plastic', text: '길가에 투명한 페트병에서 발견한 선명한 라임색. 맑은 물을 담았던 병은 비워진 뒤에도 그 색으로 소비의 흔적을 남긴다.' },
+  // No.045
+  'Yellow-04': { name: 'PLASTIK LIME', color: 'CBD917', type: 'Plastic', text: '비닐 봉지 속 플라스틱 물체에서 발견한 밝은 연두색. 눈에 잘 띄도록 만들어진 색이지만, 반복되는 일상 속에서는 그 존재마저 익숙해진다.' },
+  // No.046
+  'Green-11': { name: 'WASTE GREEN', color: '68DC5A', type: 'Paper', text: '풀숲 위에 놓인 포장에서 발견한 부드러운 그린. 자연을 닮은 색을 가진 소비재가 오히려 자연 속에서 낯설지 않게 섞여 있다.' },
+  // No.047
+  'Green-09': { name: 'TOXIC GREEN', color: '96E95A', type: 'Other', text: '겹겹이 쌓인 초록 비닐봉투에서 발견한 강렬한 녹색. 자연을 연상시키는 색이지만, 그 표면에는 우리가 버린 것들의 흔적이 겹겹이 쌓여 있다.' },
+  // No.048
+  'Green-03': { name: 'METAL OLIVE', color: '185838', type: 'Metal', text: '오래된 식용유 용기 표면에서 발견한 짙은 올리브색. 일상의 소비를 담았던 금속 용기는 버려진 뒤에도 무게감 있는 색으로 공간에 남아 있다.' },
+  // No.049
+  'Green-06': { name: 'WORN OLIVE', color: 'A1AE94', type: 'Plastic', text: '돌 틈에 묻힌 낡은 페트병에서 발견한 탁한 올리브색. 버려진 플라스틱은 주변의 자연과 뒤섞이며 오래된 풍경처럼 자리를 잡고 있다.' },
+  // No.050
+  'Green-07': { name: 'TANGLED GREEN', color: '20764E', type: 'Other', text: '뒤엉킨 그물망 사이에 남겨진 선명한 초록색. 수거를 기다리는 쓰레기들은 서로 얽힌 채, 골목 한편의 익숙한 풍경이 되어간다.' },
+  // No.051
+  'Green-08': { name: 'GRAFFITI GREEN', color: '025229', type: 'Other', text: '낡은 쓰레기통 위에 덧칠된 거친 초록색. 버려진 공간 위에 또 다른 흔적이 쌓이며, 도시의 시간이 겹겹이 남아 있다.' },
+  // No.052
+  'Yellow-07': { name: 'FADING OLIVE', nameSize: 90.15, color: 'BDC5A1', ink: 'black', type: 'Paper', text: '길 위에 버려진 오래된 책에서 발견한 바랜 올리브색. 한때 누군가의 공간을 채웠던 기록은 이제 거리의 낯선 잔해가 되었다.' },
+  // No.053
+  'Blue-07': { name: 'WORN MINT', color: '4FC2BE', type: 'Other', text: '거리 한편에 버려진 소파에서 발견한 바랜 민트색. 누군가의 일상을 담았던 물건은 버려진 뒤에도 한때의 흔적을 고스란히 남긴다.' },
+  // No.054
+  'Blue-03': { name: 'STAINED TEAL', color: '008499', type: 'Paper', text: '흙과 낙엽 사이 구겨진 포장지에서 발견한 탁한 청록색. 한때 깨끗했던 색은 구겨지고 오염된 채 주변의 잔해와 뒤섞여 있다.' },
+  // No.055
+  'Orange-02': { name: 'TARNISHED TEAL', color: '165353', type: 'Plastic', text: '모래 위에 찌그러진 포장재에서 발견한 탁한 청록색. 본래의 형태를 잃은 물건은 낯선 풍경 속에서 색만을 남긴 채 놓여 있다.' },
+  // No.056
+  'Green-02': { name: 'CRUSHED EMERALD', nameSize: 93.15, nameSpacing: '-0.05em', color: '2DB057', type: 'Metal', text: '찌그러진 캔의 틈에서 번지는 어두운 에메랄드색. 한때 가득 차 있던 음료는 사라지고, 구겨진 금속만이 거리 위에 남았다.' },
+  // No.057
+  'Blue-11': { name: 'FADING SKY', color: '92DBFF', ink: 'black', type: 'Other', text: '흩어진 플라스틱과 포장재에서 발견한 흐린 하늘색. 깨끗한 색을 품은 물건들은 버려진 뒤 서로 겹쳐져 낯선 풍경을 만든다.' },
+  // No.058
+  'Blue-10': { name: 'SACKED BLUE', color: '0486DB', type: 'Other', text: '골목 위 커다란 쓰레기봉투에서 발견한 짙은 파란색. 무언가를 감추듯 묶인 봉투는 버려진 것들의 마지막 모습을 품고 있다.' },
+  // No.059
+  'Blue-04': { name: 'ABANDONED COBALT', nameSize: 84.15, nameSpacing: '-0.05em', color: '015BD8', type: 'Paper', text: '쓰레기 사이에 놓인 상자에서 발견한 선명한 코발트색. 익숙한 브랜드의 색은 소비가 끝난 순간, 도시의 잔해 속으로 남겨졌다.' },
+  // No.060
+  'Blue-08': { name: 'POLLUTED BLUE', color: '2962C2', type: 'Metal', text: '여러 페트병과 캔 사이에서 발견한 탁한 파란색. 한 번의 소비가 남긴 흔적들이 겹쳐지며 거리 위에 하나의 색을 만든다.' },
+  // No.061
+  'Blue-09': { name: 'FADING COBALT', color: '101A70', type: 'Metal', text: '풀숲 사이에 버려진 캔에서 발견한 짙은 코발트색. 자연 속에 놓인 인공적인 색은 쉽게 사라지지 않은 채 오래 남아 있다.' },
+  // No.062
+  'Blue-12': { name: 'DIRTY COBALT', nameSize: 90.15, nameSpacing: '-0.05em', color: '003A9D', hex: '96A942', type: 'Plastic', text: '아스팔트 위 흩어진 병뚜껑의 선명한 코발트색. 작고 가벼운 플라스틱 조각은 발길에 밀려나며 도시 곳곳에 남겨진다.' },
+  // No.063
+  'Blue-02': { name: 'STAINED BLUE', color: '7AA5CE', type: 'Paper', text: '길가에 버려진 물통에서 발견한 탁한 푸른색. 구겨진 표면과 얼룩진 흔적 사이로 남은 색이 버려진 시간을 드러낸다.' },
+  // No.064
+  'Blue-06': { name: 'WORN AQUA', color: '63E5FD', ink: 'black', type: 'Plastic', text: '돌 사이에 놓인 낡은 물건에서 발견한 옅은 아쿠아색. 자연의 색 사이에 남겨진 인공적인 빛은 어색하게 풍경에 섞여 있다.' },
+  // No.065
+  'Blue-13': { name: 'ABANDONED VIOLET', nameSize: 89.15, nameSpacing: '-0.05em', color: '453492', type: 'Plastic', text: '나뭇잎 사이에 버려진 페트병에서 발견한 흐린 보라색. 비어버린 병은 자연에 기대어 놓인 채, 누군가의 소비가 남긴 흔적이 되었다.' },
+  // No.066
+  'Purple-09': { name: 'WORN VIOLET', color: '8944BB', type: 'Other', text: '길 위에 버려진 장갑에서 발견한 낡은 보랏빛. 한때 손을 보호하던 물건은 이제 차가운 바닥 위에 홀로 남아 있다.' },
+  // No.067
+  'Blue-05': { name: 'DIRTY VIOLET', color: '503393', type: 'Other', text: '보도 위에 흩어진 천에서 발견한 짙은 보랏빛. 구겨지고 늘어진 천은 본래의 쓰임을 잃은 채 거리의 일부가 되어간다.' },
+  // No.068
+  'Purple-02': { name: 'POLLUTED PURPLE', nameSpacing: '-0.05em', color: '5B2382', type: 'Plastic', text: '쓰레기통을 뒤덮은 봉투에서 발견한 강렬한 보라색. 화려한 색과 뒤섞인 쓰레기들은 도시의 일상적인 풍경처럼 놓여 있다.' },
+  // No.069 (피그마 No.073)
+  'Orange-21': { name: 'STALE OCHRE', color: 'C4AE77', type: 'Plastic', text: '길 위에 쓰러진 음료병에서 발견한 탁한 황색. 남겨진 음료와 먼지가 뒤섞인 병은 한때의 소비를 그대로 품고 있다.' },
+  // No.070 (피그마 No.074)
+  'Orange-09': { name: 'RUSTED OCHRE', color: 'B37C4B', type: 'Other', text: '거칠게 부식된 물체에서 발견한 탁한 황토색. 오랜 시간 방치된 표면에는 녹과 먼지가 겹쳐져 시간이 색처럼 쌓여 있다.' },
+  // No.071 (피그마 No.075)
+  'Orange-05': { name: 'WEATHERED BROWN', nameSize: 85.15, nameSpacing: '-0.05em', color: '6F5445', type: 'Other', text: '부서진 목재와 폐자재 사이에서 발견한 바랜 갈색. 한때 건물의 일부였던 재료들은 해체된 뒤 또 다른 형태의 잔해가 되었다.' },
+  // No.072 (피그마 No.076)
+  'Brown-01': { name: 'STALE AMBER', color: '81552B', type: 'Glass', text: '버려진 유리병 사이에서 발견한 오래된 호박색. 빛을 머금던 병들은 이제 비워진 채 서로 기대어 버려진 시간만을 남긴다.' },
+  // No.073 (피그마 No.077)
+  'Red-17': { name: 'STAINED BROWN', color: '44281B', type: 'Glass', text: '담배꽁초가 쌓인 재떨이에서 발견한 탁한 갈색. 수많은 흔적이 겹쳐진 표면은 반복된 소비의 시간을 고스란히 보여준다.' },
+  // No.074 (피그마 No.078)
+  'Red-01': { name: 'CRUSHED CRIMSON', nameSpacing: '-0.05em', color: '2C1C1C', type: 'Plastic Film', text: '짓눌린 사탕 포장지에서 발견한 어두운 크림슨색. 한때 선명했던 포장은 구겨진 채 바닥에 남아 소비의 끝을 보여준다.' },
+  // No.075 (피그마 No.079)
+  'Orange-07': { name: 'ASHEN BEIGE', color: 'A47A4B', type: 'Other', text: '길 위에 쌓인 담배꽁초에서 발견한 탁한 베이지색. 수없이 버려진 흔적들은 작은 조각이 되어 바닥에 오래 남아 있다.' },
+  // No.076 (피그마 No.080)
+  'Orange-04': { name: 'ROTTEN AMBER', color: '96491B', type: 'Other', text: '썩어가는 버섯 사이에서 발견한 탁한 갈색과 황금빛. 자연스럽게 사라지는 것과 오래 남겨지는 것의 경계가 한 장면 안에 겹쳐 있다.' },
+  // No.077 (피그마 No.081)
+  'Black-05': { name: 'SOILED BLACK', color: '111111', type: 'Plastic Film', text: '검은 봉투 안에 남겨진 음식물에서 발견한 깊은 검정색. 버려진 것들은 봉투 안에서 뒤섞인 채 보이지 않는 풍경으로 남아 있다.' },
+  // No.078 (피그마 No.082)
+  'Orange-06': { name: 'WORN CHARCOAL', nameSize: 90.15, color: '2C313B', type: 'Plastic', text: '거리 한편에 버려진 스피커에서 발견한 짙은 차콜색. 소리를 내던 물건은 기능을 잃은 뒤 조용한 도시의 잔해가 되었다.' },
+  // No.079 (피그마 No.083)
+  'Black-03': { name: 'FADED BLACK', color: '46474C', type: 'Other', text: '길 위에 버려진 장갑에서 발견한 바랜 검정색. 한때 누군가의 손을 감싸던 물건은 차가운 바닥 위에 홀로 남아 있다.' },
+  // No.080 (피그마 No.084)
+  'Green-01': { name: 'SOILED BLACK', color: '010400', type: 'Other', text: '나뭇잎을 담고 있는 쓰레기봉투의 검은색. 버려진 봉투와 그 틈을 뚫고 나온 식물은 인공적인 것과 자연적인 것이 뒤섞인 장면을 만든다.' },
+  // No.081 (피그마 No.089)
+  'White-03': { name: 'SOILED IVORY', color: 'F9F3E4', ink: 'black', type: 'Paper', text: '바닥에 버려진 종이컵에서 발견한 탁한 아이보리색. 깨끗했던 표면에는 시간이 지나며 먼지와 흔적이 하나씩 내려앉았다.' },
+  // No.082 (피그마 No.090)
+  'Red-12': { name: 'CRUSHED SILVER', color: 'C1C5CE', ink: 'black', type: 'Metal', text: '짓눌린 캔에서 발견한 거칠고 차가운 은색. 반짝이던 금속은 찌그러진 뒤에도 빛을 잃지 않은 채 바닥에 남아 있다.' },
+  // No.083 (피그마 No.091)
+  'White-05': { name: 'WORN WHITE', color: 'DEE4ED', ink: 'black', type: 'Metal', text: '구겨진 음료 캔에서 발견한 낡은 흰색. 본래의 깨끗함을 잃은 종이는 바닥의 먼지와 섞여 오래된 흔적처럼 남는다.' },
+  // No.084 (피그마 No.092)
+  'White-04': { name: 'STAINED WHITE', nameSize: 90.15, color: 'FAFAFA', ink: 'black', type: 'Other', text: '풀숲 사이에 버려진 용기에서 발견한 탁한 흰색. 깨끗한 표면 위로 자연의 흔적이 겹쳐지며 버려진 시간을 드러낸다.' },
+  // No.085 (피그마 No.093)
+  'Black-06': { name: 'DIRTY CLEAR', color: 'D2D9DB', ink: 'black', type: 'Plastic', text: '길 위에 버려진 투명 컵에서 발견한 흐릿한 투명색. 투명했던 물체는 먼지와 오염을 머금은 채 더 이상 깨끗하지 않은 빛을 반사한다.' },
+  // No.086 (피그마 No.094)
+  'Black-07': { name: 'ABANDONED WHITE', nameSize: 91.15, nameSpacing: '-0.05em', color: 'F5FCFF', ink: 'black', type: 'Plastic', text: '도로 위에 버려진 치실에서 발견한 선명한 푸른빛 흰색. 무언가를 걸어두던 일상의 도구는 쓰임을 잃고 길 위에 홀로 남았다.' },
+  // No.087 (피그마 No.095)
+  'Yellow-01': { name: 'SOILED WHITE', color: 'E1E5EB', hex: 'DBE0E9', ink: 'black', type: 'Plastic Film', text: '찢어진 비닐봉투에서 발견한 탁한 흰색. 가벼운 비닐은 바람에 흩어진 뒤 거리 곳곳에 오래 남는 흔적이 된다.' },
+  // No.088 (피그마 No.096)
+  'Black-01': { name: 'FADING CLEAR', color: 'CDD2D9', ink: 'black', type: 'Other', text: '풀숲에 방치된 비닐 포장재에서 발견한 흐린 투명색. 자연을 비추던 얇은 표면은 주변의 색을 머금은 채 풍경 속에 묻혀간다.' },
+  // No.089 (피그마 No.097)
+  'White-01': { name: 'TOXIC WHITE', color: 'EAEAEA', ink: 'black', type: 'Metal', text: '풀숲에 버려진 일회용 캔에서 발견한 낡은 흰색. 찌그러진 용기들은 본래의 형태를 잃은 채 자연과 뒤섞여 남아 있다.' },
+  // No.090 (피그마 No.098)
+  'White-02': { name: 'WORN WHITE', color: 'E4E5E5', ink: 'black', type: 'Plastic Film', text: '건물 틈에 놓인 낡은 봉투에서 발견한 흐린 흰색. 한때 깨끗했던 비닐은 구겨지고 늘어진 채 도시의 한구석에 남았다.' },
+  // No.091 (피그마 No.099)
+  '#2508': { name: 'STAINED IVORY', color: 'E0DDD8', ink: 'black', type: 'Plastic', text: '흩어진 일회용 용기에서 발견한 탁한 아이보리색. 깨끗했던 용기들은 버려진 뒤 서로 겹쳐지며 하나의 무질서한 풍경을 만든다.' },
+  // No.092 (피그마 No.100)
+  '#2513': { name: 'STYROFOAM WHITE', nameSpacing: '-0.05em', color: 'F8F9FD', ink: 'black', type: 'Other', text: '자갈 위에 버려진 포장 용기에서 발견한 바랜 흰색. 단단했던 형태는 바닥에 놓인 채 낡아가며 주변의 풍경 속으로 천천히 묻혀간다.' },
+  // No.093 (피그마 No.088)
+  'Blue-01': { name: 'STAINED BLACK', color: '515353', type: 'Paper', text: '버려진 커피컵과 담배꽁초에서 발견한 탁한 검정색. 한 번의 소비가 남긴 작은 흔적들이 길 위에 겹겹이 쌓여 있다.' },
+  // No.094 (피그마 No.072)
+  'Purple-03': { name: 'ABANDONED PURPLE', nameSize: 85.15, nameSpacing: '-0.05em', color: '655088', type: 'Metal', text: '여러 플라스틱 물건 사이에서 발견한 깊은 보랏빛. 일상에서 사용되던 물건들은 버려진 순간 하나의 색 덩어리처럼 쌓여 있다.' },
+  // No.095 (피그마 No.087)
+  'Orange-08': { name: 'WORN BLACK', color: '272929', type: 'Other', text: '폐자재 속 버려진 검은 물체에서 발견한 낡은 검정색. 부서지고 뒤섞인 잔해 속에서 한때의 물건은 형태만 남긴 채 놓여 있다.' },
+  // No.096 (피그마 No.070)
+  'Purple-04': { name: 'DIRTY PURPLE', color: '7546C9', type: 'Plastic', text: '흙과 자갈 위에 버려진 물병에서 발견한 탁한 보랏빛. 찌그러진 플라스틱 표면에 묻은 먼지가 색을 더욱 낡고 거칠게 만든다.' },
+  // No.097 (피그마 No.085)
+  'Black-02': { name: 'DISCARDED BLACK', nameSpacing: '-0.03em', color: '353535', type: 'Plastic', text: '겹겹이 쌓인 검은 용기에서 발견한 깊은 검정색. 한 번의 사용을 끝낸 용기들은 서로 포개진 채 도시의 잔해처럼 쌓여 있다.' },
+  // No.098 (피그마 No.069)
+  'Purple-01': { name: 'STAINED LILAC', color: 'C59CCF', type: 'Paper', text: '바닥에 흘러 굳은 흔적에서 발견한 탁한 라일락색. 깨끗했던 색은 바닥에 얼룩처럼 남아 쉽게 지워지지 않는 흔적이 되었다.' },
+  // No.099 (피그마 No.071)
+  'Purple-06': { name: 'WORN VIOLET', color: '6E3DD3', type: 'Other', text: '길 위에 떨어진 천 조각에서 발견한 짙은 보랏빛. 바닥에 구겨진 채 놓인 천은 지나가는 사람들의 발끝 아래에서 천천히 닳아간다.' },
+  // No.100 (피그마 No.086)
+  'Black-04': { name: 'MUDDY OLIVE', color: '2B3F3F', type: 'Other', text: '흙과 먼지에 뒤덮인 타이어에서 발견한 탁한 올리브색. 오랜 시간 길 위를 굴렀던 흔적이 표면에 그대로 남아 있다.' },
 }
 
 // 목록 필터: Waste Type 재질 또는 Similar Colors 색
@@ -794,9 +999,9 @@ for (const { cell } of [...GRID_CELLS, ...Object.values(FILTER_ROWS).flat(2).map
   if (!GRID_NO.has(cellId(cell))) GRID_NO.set(cellId(cell), GRID_NO.size + 1)
 }
 const COLOR_OF = new Map(WASTE_PHOTOS.map((p) => [p.name, p.color]))
-const detailOf = (cell: Cell) => CELL_DETAILS[photoName(cell) ?? ''] ?? {}
+const detailOf = (cell: Cell): Partial<CellDetail> => CELL_DETAILS[cellId(cell)] ?? {}
 const panelColor = (cell: Cell) => {
-  const hex = detailOf(cell).hex
+  const { color: hex } = detailOf(cell)
   if (hex) return `#${hex}`
   const color = COLOR_OF.get(photoName(cell) ?? '')
   return (color && COLOR_FILL[color]) || '#000000'
@@ -924,7 +1129,8 @@ function CellZoom({
     const i = cells.findIndex((c) => c.key === cellKey)
     onNavigate(cells[(i + d + cells.length) % cells.length].key)
   }
-  const ink = inkOn(panel)
+  // 피그마에 정해 둔 글자색. 내용이 없는 사진은 패널 밝기로 정한다
+  const ink = detail.color ? (detail.ink === 'black' ? '#000000' : '#ffffff') : inkOn(panel)
 
   return createPortal(
     <div
@@ -933,7 +1139,8 @@ function CellZoom({
       onClick={() => phase === 'zoom' && closeRef.current()}
     >
       <img ref={imgRef} className="archiving-zoom__img" src={cellSrc(cell)} alt="" />
-      <p ref={labelRef} className="archiving-zoom__label">
+      {/* 번호는 사진의 패널 색으로 쓴다 (피그마 예시 #8B0113 이 붉은 망 사진의 패널 색) */}
+      <p ref={labelRef} className="archiving-zoom__label" style={{ color: panel }}>
         {cellLabel(cell)}
       </p>
       {phase === 'detail' && (
@@ -945,11 +1152,18 @@ function CellZoom({
             className="archiving-detail"
             style={{ color: ink }}
           >
-            {detail.name && <p className="archiving-detail__name">{detail.name}</p>}
+            {detail.name && (
+              <p
+                className="archiving-detail__name"
+                style={{ fontSize: detail.nameSize, letterSpacing: detail.nameSpacing }}
+              >
+                {detail.name}
+              </p>
+            )}
             <p className="archiving-detail__no">(No.{cellNo(cell)})</p>
-            {detail.period && <p className="archiving-detail__period">{detail.period}</p>}
+            {detail.name && <p className="archiving-detail__period">{DETAIL_PERIOD}</p>}
             <img className="archiving-detail__thumb" src={cellSrc(cell)} alt="" />
-            {detail.hex && <p className="archiving-detail__hex"># {detail.hex}</p>}
+            {detail.color && <p className="archiving-detail__hex"># {detail.hex ?? detail.color}</p>}
             {detail.text && <p className="archiving-detail__text">{detail.text}</p>}
             {detail.type && <p className="archiving-detail__type">{`Waste Type\n${detail.type}`}</p>}
             <button type="button" className="archiving-detail__close" aria-label="닫기" onClick={() => closeRef.current()}>
