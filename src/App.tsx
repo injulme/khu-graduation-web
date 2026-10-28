@@ -1,4 +1,4 @@
-// import { Cursor } from './components/Cursor'
+import { Cursor } from './components/Cursor'
 import { Header } from './components/Header'
 import { useRoute } from './lib/useRoute'
 import { Landing } from './scenes/Landing'
@@ -18,7 +18,8 @@ export default function App() {
       {route === 'object' && arg && <ObjectPage name={arg} />}
       {route === 'gacha' && <Gacha />}
       {route === 'archiving' && <Archiving />}
-      {/* <Cursor /> */}
+      {/* 커스텀 커서는 archiving 화면에서만 쓴다 */}
+      {route === 'archiving' && <Cursor />}
     </>
   )
 }

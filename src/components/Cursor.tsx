@@ -13,7 +13,9 @@ export function Cursor() {
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse') return
-      el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`
+      // 1920 기준 크기라 좁은 화면에서는 화면 축소(useFitWidth)와 같은 비율로 줄인다
+      const scale = Math.min(1, document.documentElement.clientWidth / 1920)
+      el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%) scale(${scale})`
       el.classList.add('is-visible')
     }
     const onLeave = () => el.classList.remove('is-visible')
