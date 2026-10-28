@@ -614,6 +614,12 @@ function useEnter(ref: RefObject<HTMLElement | null>) {
           { '--enter-y': `${from}px`, opacity: 0 },
           { '--enter-y': '0px', opacity: 1, duration: ENTER_DURATION, ease: 'power3.out' },
         )
+        // 둥실둥실: 트레이·커피컵(usePinFloat)과 같은 폭·박자. 처음엔 화면 밖·투명이라 시작 위치로 바로 놓여도 티 나지 않는다
+        gsap.fromTo(
+          el,
+          { '--float-y': `${-FLOAT}px` },
+          { '--float-y': `${FLOAT}px`, duration: FLOAT_DURATION, ease: 'sine.inOut', repeat: -1, yoyo: true },
+        )
       })
     }, root)
     return () => ctx.revert()
