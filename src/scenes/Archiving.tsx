@@ -674,12 +674,12 @@ function InkWord({ children }: { children: string }) {
 const ZOOM_W = 1332
 const ZOOM_H = 971.25
 const ZOOM_LABEL_TOP = 180.23
-const ZOOM_DURATION = 0.6 // 커지고 줄어드는 시간(초)
+const ZOOM_DURATION = 0.5 // 커지고 줄어드는 시간(초)
 const ZOOM_EASE = 'power3.inOut'
-const ZOOM_LABEL_FADE = 0.3 // 번호가 나타나고 사라지는 시간(초)
-const ZOOM_HOLD = 0.6 // 확대가 끝난 뒤 상세 화면으로 넘어가기까지 머무는 시간(초)
+const ZOOM_LABEL_FADE = 0.25 // 번호가 나타나고 사라지는 시간(초)
+const ZOOM_HOLD = 0.15 // 확대가 끝난 뒤 상세 화면으로 넘어가기까지 머무는 시간(초)
 // 상세: 사진이 왼쪽 절반을 채우고 오른쪽 절반에 사진 색 패널이 들어온다
-const DETAIL_DURATION = 0.8
+const DETAIL_DURATION = 0.7
 const DETAIL_EASE = 'power3.inOut'
 const DETAIL_SWAP = 0.4 // 이전/다음 사진으로 바뀔 때 나타나는 시간(초)
 
