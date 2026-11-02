@@ -51,14 +51,16 @@
 .about-hero__title { left: 82px; top: 109px; }
 .about-hero__seeing { left: 912px; top: 899px; }
 
+/* 비닐봉지는 그리드 자리(1329)에 닿을 때까지 화면에 붙어 있다 */
 .about-bag {
   left: 593px;
   top: 116px;
   width: 734px;
-  height: 724px;
+  height: calc(1329px - 116px + 724px);
   z-index: 1;
   pointer-events: none;
 }
+.about-bag__pin { position: sticky; top: 116px; height: 724px; }
 .about-bag img { width: 100%; height: 100%; mix-blend-mode: darken; }
 
 .about-hero__ask,
@@ -129,7 +131,7 @@
 .about-color__panel > * { position: absolute; }
 .about-color__fill {
   inset: 0;
-  background: linear-gradient(to top, var(--c) 70%, color-mix(in srgb, var(--c) 35%, #ffffff));
+  background: var(--c);
   transform-origin: bottom;
 }
 .about-color__title,
@@ -214,13 +216,11 @@
 .about-color__heading {
   left: 436px;
   top: 2429px;
-  width: 812px;
   font-family: var(--sans);
   font-size: 100px;
   font-weight: 700;
   line-height: 1.22;
   letter-spacing: -0.01em;
-  text-align: center;
   white-space: nowrap;
 }
 .about-color__rule { left: -12px; height: 2px; background: currentColor; }
@@ -242,4 +242,5 @@
 .about-color__ko--tail { top: 2950px; }
 .about-color__en { top: 2627px; text-align: right; }
 
-.about-color__object { z-index: 3; object-fit: contain; pointer-events: none; }
+.about-color__object { inset: 0; z-index: 3; pointer-events: none; }
+.about-color__object img { position: absolute; max-width: none; object-fit: contain; }

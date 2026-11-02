@@ -45,6 +45,7 @@ type Palette = {
   side: string
   object: WasteObject
   objectBox: Box
+  heading: string
   titleAt: { x: number; y: number; noX: number; noY: number }
   insetFrom: { x: number; y: number }
   enRight: number
@@ -66,6 +67,7 @@ const PALETTES: Palette[] = [
     side: 'Red-11',
     object: 'net-red',
     objectBox: { x: 1157, y: 2205.5, w: 649.48, h: 991.18, r: -14.02 },
+    heading: 'NETTED SHELLS',
     titleAt: { x: 80, y: 110, noX: 80, noY: 830 },
     insetFrom: { x: 1190, y: 290 },
     enRight: 1224,
@@ -96,6 +98,7 @@ const PALETTES: Palette[] = [
     side: 'Blue-12',
     object: 'box-adidas',
     objectBox: { x: 874.53, y: 2188.53, w: 1030.57, h: 1030.57, r: 29.65 },
+    heading: 'ABANDONED COBALT',
     titleAt: { x: 80, y: 110, noX: 71, noY: 830 },
     insetFrom: { x: 1204, y: 296 },
     enRight: 1089,
@@ -126,6 +129,7 @@ const PALETTES: Palette[] = [
     side: 'Green-09',
     object: 'net-green',
     objectBox: { x: 1204, y: 2234, w: 679.43, h: 959.87, r: -7.09 },
+    heading: 'TANGLED GREEN',
     titleAt: { x: 138, y: 178, noX: 129, noY: 828 },
     insetFrom: { x: 1204, y: 290 },
     enRight: 1089,
@@ -218,12 +222,6 @@ function useIntro(root: RefObject<HTMLElement | null>) {
 
       gsap.utils.toArray<HTMLElement>('.about-bob').forEach((node, i) => {
         gsap.to(node, { y: -10, duration: 2.2 + i * 0.3, ease: 'sine.inOut', yoyo: true, repeat: -1 })
-      })
-
-      gsap.to('.about-bag', {
-        y: 1213,
-        ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top top', end: '+=1213', scrub: true },
       })
 
       gsap.utils.toArray<HTMLElement>('.about-grid__cell').forEach((cell) => {
@@ -354,6 +352,7 @@ function Callout({ side }: { side: 'left' | 'right' }) {
 
 function ColorSection({ p }: { p: Palette }) {
   const style = { '--c': `#${p.hex}` } as CSSProperties
+  const objectBox = boxStyle(p.objectBox)
   return (
     <section className={`about-color about-color--${p.key}`} style={style} aria-label={p.name}>
       <img className="about-color__photo" src={photoSrc(p.panel)} alt="" />
@@ -396,7 +395,7 @@ function ColorSection({ p }: { p: Palette }) {
         {p.name} <span className="about-color__hex"># {p.hex}</span>
       </p>
       <span className="about-color__rule about-color__rule--lead about-color__line" aria-hidden="true" />
-      <h3 className="about-color__heading about-color__line">NETTED SHELLS</h3>
+      <h3 className="about-color__heading about-color__line">{p.heading}</h3>
       <p className="about-color__ko about-color__ko--lead about-color__line">
         {p.ko1.map((t) => (
           <span key={t}>{t}</span>
@@ -419,7 +418,10 @@ function ColorSection({ p }: { p: Palette }) {
       </p>
       <span className="about-color__rule about-color__rule--end about-color__line" aria-hidden="true" />
 
-      <img className="about-color__object" src={objectSrc(p.object)} alt="" style={boxStyle(p.objectBox)} />
+      {/* 움직임은 바깥이, 가운데 맞춤과 기울기는 이미지가 맡는다. 한 요소에 두면 GSAP 가 -50% 를 잃는다 */}
+      <div className="about-color__object" style={{ transformOrigin: `${objectBox.left}px ${objectBox.top}px` }}>
+        <img src={objectSrc(p.object)} alt="" style={objectBox} />
+      </div>
     </section>
   )
 }
@@ -444,7 +446,9 @@ export function About() {
         <h1 className="about-hero__title about-bob">Is the nature</h1>
 
         <div className="about-bag">
-          <img className="about-bob" src={objectSrc('bag-blue')} alt="" />
+          <div className="about-bag__pin">
+            <img className="about-bob" src={objectSrc('bag-blue')} alt="" />
+          </div>
         </div>
 
         <p className="about-hero__ask">
@@ -456,7 +460,7 @@ export function About() {
         <Callout side="left" />
         <Callout side="right" />
 
-        <span className="about-mark" style={{ left: 890, top: 907, width: 606 }} aria-hidden="true" />
+        <span className="about-mark" style={{ left: 890, top: 907, width: 972 }} aria-hidden="true" />
         <p className="about-hero__seeing about-bob">we are seeing truly nature?</p>
 
         <p className="about-hero__question" data-type aria-label={QUESTION}>
