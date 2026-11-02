@@ -621,12 +621,6 @@
 
 .cursor.is-visible { opacity: 1; }
 
-/* archiving 화면에서는 헤더 메뉴를 포함해 마우스 커서를 항상 기본 화살표로 둔다 */
-body:has(.archiving),
-body:has(.archiving) * {
-  cursor: default !important;
-}
-
 .archiving {
   position: relative;
   width: 1920px;
@@ -714,9 +708,9 @@ body:has(.archiving) * {
   pointer-events: none;
 }
 
-/* 첫 화면 오브젝트 등장. --enter-y 는 gsap 이 바꾼다 (Archiving.tsx useEnter) */
+/* 첫 화면 오브젝트 등장(--enter-y)과 그 뒤 둥실둥실(--float-y). 둘 다 gsap 이 바꾼다 (Archiving.tsx useEnter) */
 .archiving [data-enter] {
-  translate: 0 var(--enter-y, 0px);
+  translate: 0 calc(var(--enter-y, 0px) + var(--float-y, 0px));
 }
 
 /* 둥실둥실 뜨는 움직임. --float 는 gsap 이 바꾼다 */
@@ -1029,6 +1023,15 @@ body:has(.archiving) * {
   flex-direction: column;
   gap: 28px;
   margin: 0;
+  /* 필터 등장 애니메이션(transform·opacity)이 칸마다 쌓임 맥락을 만들어 사진 z-index 가 칸 안에 갇히므로,
+     hover 한 칸 자체를 옆 칸 위로 올린다. 사진 확대처럼 다 줄어든 뒤에 뒤로 보낸다 */
+  position: relative;
+  transition: z-index 0s 0.5s;
+}
+
+.archiving__cell:has(> .archiving__cell-img:hover) {
+  z-index: 1;
+  transition-delay: 0s;
 }
 
 .archiving__cell-img {

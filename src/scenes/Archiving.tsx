@@ -593,6 +593,11 @@ function useRise(ref: RefObject<HTMLElement | null>) {
 // 첫 렌더 직후 화면이 잠깐 멈춰서 CSS 애니메이션은 그 사이에 지나가 버린다. gsap 은 멈춘 시간을 건너뛰지 않는다
 const ENTER_DURATION = 1 // 나타나는 시간(초)
 const ENTER_SCREEN_H = 1080 // 출발 위치 기준 화면 높이 (1920×1080 기준 px)
+// 둥실둥실: 오브젝트마다 박자와 출발 지점을 조금씩 어긋나게 해서 따로 떠 있는 것처럼 보이게 한다
+const BOB_Y = 8 // 제자리 기준 위아래로 움직이는 폭(px, 1920 기준)
+const BOB_DURATION = 2 // 위에서 아래까지 걸리는 시간(초). 오브젝트마다 조금씩 늘린다
+const BOB_DURATION_STEP = 0.35
+const BOB_OFFSET = 0.6 // 오브젝트마다 출발 지점을 이만큼(초) 앞당긴다
 
 function useEnter(ref: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
@@ -602,7 +607,7 @@ function useEnter(ref: RefObject<HTMLElement | null>) {
       // 회전까지 들어간 실제 보이는 박스를 1920 기준 px 로 잰다 (축소 화면에서는 zoom 만큼 나눈다)
       const rootRect = root.getBoundingClientRect()
       const scale = rootRect.width / root.offsetWidth
-      root.querySelectorAll<HTMLElement>('[data-enter]').forEach((el) => {
+      root.querySelectorAll<HTMLElement>('[data-enter]').forEach((el, i) => {
         const r = el.getBoundingClientRect()
         const top = (r.top - rootRect.top) / scale
         const bottom = (r.bottom - rootRect.top) / scale
@@ -614,6 +619,20 @@ function useEnter(ref: RefObject<HTMLElement | null>) {
           { '--enter-y': `${from}px`, opacity: 0 },
           { '--enter-y': '0px', opacity: 1, duration: ENTER_DURATION, ease: 'power3.out' },
         )
+        // 처음엔 화면 밖·투명이라 중간 지점에서 시작해도 티 나지 않는다
+        gsap
+          .fromTo(
+            el,
+            { '--float-y': `${-BOB_Y}px` },
+            {
+              '--float-y': `${BOB_Y}px`,
+              duration: BOB_DURATION + (i % 3) * BOB_DURATION_STEP,
+              ease: 'sine.inOut',
+              repeat: -1,
+              yoyo: true,
+            },
+          )
+          .seek(i * BOB_OFFSET)
       })
     }, root)
     return () => ctx.revert()
@@ -668,12 +687,12 @@ function InkWord({ children }: { children: string }) {
 const ZOOM_W = 1332
 const ZOOM_H = 971.25
 const ZOOM_LABEL_TOP = 180.23
-const ZOOM_DURATION = 0.6 // 커지고 줄어드는 시간(초)
+const ZOOM_DURATION = 0.5 // 커지고 줄어드는 시간(초)
 const ZOOM_EASE = 'power3.inOut'
-const ZOOM_LABEL_FADE = 0.3 // 번호가 나타나고 사라지는 시간(초)
-const ZOOM_HOLD = 0.6 // 확대가 끝난 뒤 상세 화면으로 넘어가기까지 머무는 시간(초)
+const ZOOM_LABEL_FADE = 0.25 // 번호가 나타나고 사라지는 시간(초)
+const ZOOM_HOLD = 0.15 // 확대가 끝난 뒤 상세 화면으로 넘어가기까지 머무는 시간(초)
 // 상세: 사진이 왼쪽 절반을 채우고 오른쪽 절반에 사진 색 패널이 들어온다
-const DETAIL_DURATION = 0.8
+const DETAIL_DURATION = 0.7
 const DETAIL_EASE = 'power3.inOut'
 const DETAIL_SWAP = 0.4 // 이전/다음 사진으로 바뀔 때 나타나는 시간(초)
 
